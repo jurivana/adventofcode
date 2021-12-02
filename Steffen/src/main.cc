@@ -3,7 +3,7 @@
 #include <vector>
 
 int aoc1() {
-    // std::ifstream file("input/input.txt");
+    // std::ifstream file("input/1.txt");
     // std::string line;
     // std::getline(file, line);
     // int last = std::stoi(line);
@@ -17,7 +17,7 @@ int aoc1() {
     // }
     // return cnt;
 
-    std::ifstream file("input/input.txt");
+    std::ifstream file("input/1.txt");
     std::string line;
     std::vector<int> input;
     while (std::getline(file, line)) {
@@ -35,6 +35,48 @@ int aoc1() {
     return cnt;
 }
 
+int aoc2() {
+    // std::ifstream file("input/2.txt");
+    // std::string line;
+    // int horizontal = 0;
+    // int depth = 0;
+    // while (std::getline(file, line)) {
+    //     size_t pos = line.find(" ");
+    //     std::string direction = line.substr(0, pos);
+    //     line.erase(0, pos + 1);
+    //     int step = std::stoi(line);
+    //     if (direction == "forward") {
+    //         horizontal += step;
+    //     } else if (direction == "down") {
+    //         depth += step;
+    //     } else if (direction == "up") {
+    //         depth -= step;
+    //     }
+    // }
+    // return horizontal * depth;
+
+    std::ifstream file("input/2.txt");
+    std::string line;
+    int horizontal = 0;
+    int depth = 0;
+    int aim = 0;
+    while (std::getline(file, line)) {
+        size_t pos = line.find(" ");
+        std::string direction = line.substr(0, pos);
+        line.erase(0, pos + 1);
+        int step = std::stoi(line);
+        if (direction == "forward") {
+            horizontal += step;
+            depth += step * aim;
+        } else if (direction == "down") {
+            aim += step;
+        } else if (direction == "up") {
+            aim -= step;
+        }
+    }
+    return horizontal * depth;
+}
+
 int main() {
-    std::cout << aoc1() << std::endl;
+    std::cout << aoc2() << std::endl;
 }
