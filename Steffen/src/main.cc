@@ -1,9 +1,10 @@
 #include <fstream>
 #include <iostream>
+#include <tuple>
 #include <vector>
 
 int aoc011() {
-    std::ifstream file("input/1.txt");
+    std::ifstream file("input/01.txt");
     std::string line;
     std::getline(file, line);
     int last = std::stoi(line);
@@ -19,7 +20,7 @@ int aoc011() {
 }
 
 int aoc012() {
-    std::ifstream file("input/1.txt");
+    std::ifstream file("input/01.txt");
     std::string line;
     std::vector<int> input;
     while (std::getline(file, line)) {
@@ -38,7 +39,7 @@ int aoc012() {
 }
 
 int aoc021() {
-    std::ifstream file("input/2.txt");
+    std::ifstream file("input/02.txt");
     std::string line;
     int horizontal = 0;
     int depth = 0;
@@ -59,7 +60,7 @@ int aoc021() {
 }
 
 int aoc022() {
-    std::ifstream file("input/2.txt");
+    std::ifstream file("input/02.txt");
     std::string line;
     int horizontal = 0;
     int depth = 0;
@@ -82,7 +83,7 @@ int aoc022() {
 }
 
 int aoc031() {
-    std::ifstream file("input/3.txt");
+    std::ifstream file("input/03.txt");
     std::string line;
     std::vector<int> ones(12);
     int cnt = 0;
@@ -109,7 +110,7 @@ int aoc031() {
 }
 
 int aoc032() {
-    std::ifstream file("input/3.txt");
+    std::ifstream file("input/03.txt");
     std::string line;
     std::vector<std::vector<bool>> oxygen;
     std::vector<std::vector<bool>> co2;
@@ -166,6 +167,195 @@ int aoc032() {
     return gamma * epsilon;
 }
 
+std::pair<std::vector<int>, std::vector<std::vector<std::vector<int>>>> input04() {
+    std::ifstream file("input/04.txt");
+    std::string line;
+
+    std::vector<int> drawn;
+    std::getline(file, line);
+    size_t pos = 0;
+    do {
+        pos = line.find(",");
+        drawn.push_back(std::stoi(line.substr(0, pos)));
+        line.erase(0, pos + 1);
+    } while (pos != std::string::npos);
+
+    std::vector<std::vector<std::vector<int>>> cards;
+    while (std::getline(file, line)) {
+        std::vector<std::vector<int>> card(5);
+        for (size_t i = 0; i < 5; i++) {
+            std::getline(file, line);
+            std::vector<int> row(5);
+            for (size_t j = 0; j < 5; j++) {
+                row[j] = std::stoi(line.substr(0, 2));
+                line.erase(0, 3);
+            }
+            card[i] = row;
+        }
+        cards.push_back(card);
+    }
+
+    return {drawn, cards};
+}
+
+int aoc041() {
+    std::vector<int> drawn;
+    std::vector<std::vector<std::vector<int>>> cards;
+    std::tie(drawn, cards) = input04();
+
+    // for (auto x : drawn) {
+    //     std::cout << x << " ";
+    // }
+    // std::cout << std::endl;
+
+    // for (auto card : cards) {
+    //     for (auto row : card) {
+    //         for (auto x : row) {
+    //             std::cout << x << " ";
+    //         }
+    //         std::cout << std::endl;
+    //     }
+    //     std::cout << "----" << std::endl;
+    // }
+
+    std::vector<std::vector<std::vector<bool>>> marked(cards.size());
+    for (size_t k = 0; k < marked.size(); k++) {
+        marked[k] = std::vector<std::vector<bool>>(5);
+        for (size_t i = 0; i < 5; i++) {
+            marked[k][i] = std::vector<bool>(5, false);
+        }
+    }
+
+    int bingo = -1;
+    int winning_number;
+    for (size_t l = 0; l < drawn.size() && bingo == -1; l++) {
+        int number = drawn[l];
+        for (size_t k = 0; k < cards.size(); k++) {
+            for (size_t i = 0; i < 5; i++) {
+                for (size_t j = 0; j < 5; j++) {
+                    if (cards[k][i][j] == number) {
+                        marked[k][i][j] = true;
+                    }
+                }
+            }
+        }
+
+        for (size_t k = 0; k < marked.size(); k++) {
+            for (size_t i = 0; i < 5; i++) {
+                bool won = true;
+                for (size_t j = 0; j < 5 && won; j++) {
+                    if (!marked[k][i][j]) {
+                        won = false;
+                    }
+                }
+                if (won) {
+                    bingo = k;
+                }
+            }
+            for (size_t i = 0; i < 5; i++) {
+                bool won = true;
+                for (size_t j = 0; j < 5 && won; j++) {
+                    if (!marked[k][j][i]) {
+                        won = false;
+                    }
+                }
+                if (won) {
+                    bingo = k;
+                }
+            }
+            if (bingo == k) {
+                winning_number = number;
+                std::cout << "Bingo!" << std::endl;
+            }
+        }
+    }
+
+    int sum = 0;
+    for (size_t i = 0; i < 5; i++) {
+        for (size_t j = 0; j < 5; j++) {
+            if (!marked[bingo][i][j]) {
+                sum += cards[bingo][i][j];
+            }
+        }
+    }
+    return sum * winning_number;
+}
+
+int aoc042() {
+    std::vector<int> drawn;
+    std::vector<std::vector<std::vector<int>>> cards;
+    std::tie(drawn, cards) = input04();
+
+    std::vector<std::vector<std::vector<bool>>> marked(cards.size());
+    for (size_t k = 0; k < marked.size(); k++) {
+        marked[k] = std::vector<std::vector<bool>>(5);
+        for (size_t i = 0; i < 5; i++) {
+            marked[k][i] = std::vector<bool>(5, false);
+        }
+    }
+
+    int bingo = -1;
+    int winning_number;
+    for (size_t l = 0; l < drawn.size() && bingo == -1; l++) {
+        int number = drawn[l];
+        std::cout << "#cards " << cards.size() << " number " << number << std::endl;
+        for (size_t k = 0; k < cards.size(); k++) {
+            for (size_t i = 0; i < 5; i++) {
+                for (size_t j = 0; j < 5; j++) {
+                    if (cards[k][i][j] == number) {
+                        marked[k][i][j] = true;
+                    }
+                }
+            }
+        }
+
+        for (size_t k = 0; k < marked.size(); k++) {
+            for (size_t i = 0; i < 5; i++) {
+                bool won = true;
+                for (size_t j = 0; j < 5 && won; j++) {
+                    if (!marked[k][i][j]) {
+                        won = false;
+                    }
+                }
+                if (won) {
+                    bingo = k;
+                }
+            }
+            for (size_t i = 0; i < 5; i++) {
+                bool won = true;
+                for (size_t j = 0; j < 5 && won; j++) {
+                    if (!marked[k][j][i]) {
+                        won = false;
+                    }
+                }
+                if (won) {
+                    bingo = k;
+                }
+            }
+            if (bingo == k) {
+                winning_number = number;
+                std::cout << "Bingo! " << bingo << std::endl;
+                if (cards.size() > 1) {
+                    cards.erase(cards.begin() + k);
+                    marked.erase(marked.begin() + k);
+                    k--;
+                    bingo = -1;
+                }
+            }
+        }
+    }
+
+    int sum = 0;
+    for (size_t i = 0; i < 5; i++) {
+        for (size_t j = 0; j < 5; j++) {
+            if (!marked[bingo][i][j]) {
+                sum += cards[bingo][i][j];
+            }
+        }
+    }
+    return sum * winning_number;
+}
+
 int main() {
-    std::cout << aoc032() << std::endl;
+    std::cout << aoc042() << std::endl;
 }
