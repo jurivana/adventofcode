@@ -356,6 +356,157 @@ int aoc042() {
     return sum * winning_number;
 }
 
+int output05(std::vector<std::vector<int>> vents) {
+    int cnt = 0;
+    int max = 0;
+    for (size_t i = 0; i < 1000; i++) {
+        for (size_t j = 0; j < 1000; j++) {
+            if (vents[i][j] > 1) {
+                cnt++;
+            }
+            if (vents[i][j] > max) {
+                max = vents[i][j];
+            }
+        }
+    }
+
+    std::ofstream ofile("output/05.ppm");
+    ofile << "P3 1000 1000 " << max << std::endl;
+    for (size_t i = 0; i < 1000; i++) {
+        for (size_t j = 0; j < 1000; j++) {
+            ofile << vents[j][i] << " " << vents[j][i] << " " << vents[j][i] << " ";
+        }
+        ofile << std::endl;
+    }
+    ofile.close();
+
+    return cnt;
+}
+
+int aoc051() {
+    struct Line {
+        std::vector<int> a;
+        std::vector<int> b;
+    };
+    std::ifstream ifile("input/05.txt");
+    std::string line;
+    std::vector<Line> lines;
+    while (std::getline(ifile, line)) {
+        Line l;
+        size_t pos = line.find(",");
+        l.a.push_back(std::stoi(line.substr(0, pos)));
+        line.erase(0, pos + 1);
+        pos = line.find(" -> ");
+        l.a.push_back(std::stoi(line.substr(0, pos)));
+        line.erase(0, pos + 4);
+        pos = line.find(",");
+        l.b.push_back(std::stoi(line.substr(0, pos)));
+        line.erase(0, pos + 1);
+        l.b.push_back(std::stoi(line));
+        if (l.a[0] == l.b[0] || l.a[1] == l.b[1]) {
+            lines.push_back(l);
+        }
+    }
+    // for (auto l : lines) {
+    //     std::cout << "(" << l.a[0] << ", " << l.a[1] << ") - (" << l.b[0] << ", " << l.b[1] << ")" << std::endl;
+    // }
+
+    std::vector<std::vector<int>> vents(1000);
+    for (size_t i = 0; i < 1000; i++) {
+        vents[i] = std::vector<int>(1000, 0);
+    }
+    for (auto l : lines) {
+        bool swap = false;
+        if (l.a[0] == l.b[0]) {
+            int tmp = l.a[1];
+            l.a[1] = l.a[0];
+            l.a[0] = tmp;
+            tmp = l.b[1];
+            l.b[1] = l.b[0];
+            l.b[0] = tmp;
+            swap = true;
+        }
+        if (l.a[0] > l.b[0]) {
+            int tmp = l.b[0];
+            l.b[0] = l.a[0];
+            l.a[0] = tmp;
+        }
+        for (int i = l.a[0]; i <= l.b[0]; i++) {
+            if (!swap) {
+                vents[i][l.a[1]]++;
+            } else {
+                vents[l.a[1]][i]++;
+            }
+        }
+    }
+
+    return output05(vents);
+}
+
+int aoc052() {
+    struct Line {
+        std::vector<int> a;
+        std::vector<int> b;
+    };
+    std::ifstream ifile("input/05.txt");
+    std::string line;
+    std::vector<Line> lines;
+    while (std::getline(ifile, line)) {
+        Line l;
+        size_t pos = line.find(",");
+        l.a.push_back(std::stoi(line.substr(0, pos)));
+        line.erase(0, pos + 1);
+        pos = line.find(" -> ");
+        l.a.push_back(std::stoi(line.substr(0, pos)));
+        line.erase(0, pos + 4);
+        pos = line.find(",");
+        l.b.push_back(std::stoi(line.substr(0, pos)));
+        line.erase(0, pos + 1);
+        l.b.push_back(std::stoi(line));
+        // if (!(l.a[0] == l.b[0] || l.a[1] == l.b[1] ||
+        //       l.b[0] - l.a[0] == l.b[1] - l.a[1] ||
+        //       l.b[0] - l.a[0] == l.a[1] - l.b[1])) {
+        //     std::cout << "!" << std::endl;
+        // }
+        lines.push_back(l);
+    }
+    // for (auto l : lines) {
+    //     std::cout << "(" << l.a[0] << ", " << l.a[1] << ") - (" << l.b[0] << ", " << l.b[1] << ")" << std::endl;
+    // }
+
+    std::vector<std::vector<int>> vents(1000);
+    for (size_t i = 0; i < 1000; i++) {
+        vents[i] = std::vector<int>(1000, 0);
+    }
+    for (auto l : lines) {
+        bool swap = false;
+        if (l.a[0] == l.b[0]) {
+            int tmp = l.a[1];
+            l.a[1] = l.a[0];
+            l.a[0] = tmp;
+            tmp = l.b[1];
+            l.b[1] = l.b[0];
+            l.b[0] = tmp;
+            swap = true;
+        }
+        if (l.a[0] > l.b[0]) {
+            std::vector<int> tmp = l.b;
+            l.b = l.a;
+            l.a = tmp;
+        }
+        int m = (l.b[1] - l.a[1]) / (l.b[0] - l.a[0]);
+        for (int i = l.a[0]; i <= l.b[0]; i++) {
+            if (!swap) {
+                vents[i][l.a[1] + m * (i - l.a[0])]++;
+            } else {
+                vents[l.a[1] + m * (i - l.a[0])][i]++;
+            }
+        }
+    }
+
+    return output05(vents);
+}
+
 int main() {
-    std::cout << aoc042() << std::endl;
+    std::cout << aoc052() << std::endl;
 }
