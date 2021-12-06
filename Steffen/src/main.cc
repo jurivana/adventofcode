@@ -532,6 +532,39 @@ int aoc061() {
     return fish.size();
 }
 
+long long aoc062() {
+    std::vector<int> fish = {0};
+    size_t m = 256;
+    std::vector<long long> daniel(6);
+    for (size_t i = 0; i < 256; i++) {
+        size_t n = fish.size();
+        std::cout << i << " " << n << std::endl;
+        for (size_t j = 0; j < 6; j++) {
+            if (m - j == i) {
+                daniel[j] = n;
+            }
+        }
+        for (size_t j = 0; j < n; j++) {
+            fish[j]--;
+            if (fish[j] == -1) {
+                fish[j] = 6;
+                fish.push_back(8);
+            }
+        }
+    }
+    std::ifstream file("input/06.txt");
+    std::string line;
+    std::getline(file, line);
+    long long sum = 0;
+    size_t pos = 0;
+    do {
+        pos = line.find(",");
+        sum += daniel[std::stoi(line.substr(0, pos))];
+        line.erase(0, pos + 1);
+    } while (pos != std::string::npos);
+    return sum;
+}
+
 int main() {
-    std::cout << aoc061() << std::endl;
+    std::cout << aoc062() << std::endl;
 }
