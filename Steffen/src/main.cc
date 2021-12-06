@@ -507,6 +507,31 @@ int aoc052() {
     return output05(vents);
 }
 
+int aoc061() {
+    std::ifstream file("input/06.txt");
+    std::string line;
+    std::getline(file, line);
+    std::vector<int> fish;
+    size_t pos = 0;
+    do {
+        pos = line.find(",");
+        fish.push_back(std::stoi(line.substr(0, pos)));
+        line.erase(0, pos + 1);
+    } while (pos != std::string::npos);
+    for (size_t i = 0; i < 80; i++) {
+        size_t n = fish.size();
+        // std::cout << i << " " << n << std::endl;
+        for (size_t j = 0; j < n; j++) {
+            fish[j]--;
+            if (fish[j] == -1) {
+                fish[j] = 6;
+                fish.push_back(8);
+            }
+        }
+    }
+    return fish.size();
+}
+
 int main() {
-    std::cout << aoc052() << std::endl;
+    std::cout << aoc061() << std::endl;
 }
