@@ -1,3 +1,5 @@
+#include <algorithm>
+#include <cmath>
 #include <fstream>
 #include <iostream>
 #include <tuple>
@@ -565,6 +567,55 @@ long long aoc062() {
     return sum;
 }
 
+int aoc071() {
+    std::ifstream file("input/07.txt");
+    std::string line;
+    std::getline(file, line);
+    std::vector<int> crabs;
+    size_t pos = 0;
+    do {
+        pos = line.find(",");
+        crabs.push_back(std::stoi(line.substr(0, pos)));
+        line.erase(0, pos + 1);
+    } while (pos != std::string::npos);
+
+    std::sort(crabs.begin(), crabs.end());
+    int median = crabs[crabs.size() / 2];
+
+    int fuel = 0;
+    for (size_t i = 0; i < crabs.size(); i++) {
+        fuel += std::abs(crabs[i] - median);
+    }
+    return fuel;
+}
+
+int aoc072() {
+    std::ifstream file("input/07.txt");
+    std::string line;
+    std::getline(file, line);
+    std::vector<int> crabs;
+    size_t pos = 0;
+    do {
+        pos = line.find(",");
+        crabs.push_back(std::stoi(line.substr(0, pos)));
+        line.erase(0, pos + 1);
+    } while (pos != std::string::npos);
+
+    // Summe über kleine Gauße minimieren durch Ableitung Nullsetzen
+    int root = 0;
+    for (size_t i = 0; i < crabs.size(); i++) {
+        root += crabs[i];
+    }
+    root = std::round((double) root / crabs.size() - 0.5);
+
+    int fuel = 0;
+    for (size_t i = 0; i < crabs.size(); i++) {
+        int n = std::abs(crabs[i] - root);
+        fuel += (n * n + n) / 2;
+    }
+    return fuel;
+}
+
 int main() {
-    std::cout << aoc062() << std::endl;
+    std::cout << aoc072() << std::endl;
 }
