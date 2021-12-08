@@ -606,6 +606,7 @@ int aoc072() {
     for (size_t i = 0; i < crabs.size(); i++) {
         root += crabs[i];
     }
+    // Allgemein eigentlich floor ODER ceil!
     root = std::round((double) root / crabs.size() - 0.5);
 
     int fuel = 0;
@@ -616,6 +617,34 @@ int aoc072() {
     return fuel;
 }
 
+int aoc081() {
+    std::ifstream file("input/08.txt");
+    std::string line;
+    int cnt = 0;
+    while (std::getline(file, line)) {
+        size_t pos = line.find(" | ");
+        line.erase(0, pos + 3);
+        do {
+            pos = line.find(" ");
+            std::string digit = line.substr(0, pos);
+            if (digit.size() == 2 || digit.size() == 3 || digit.size() == 4 || digit.size() == 7) {
+                cnt++;
+            }
+            line.erase(0, pos + 1);
+        } while (pos != std::string::npos);
+    }
+    return cnt;
+}
+
+int aoc082() {
+    std::ifstream file("input/08.txt");
+    std::string line;
+    while (std::getline(file, line)) {
+        std::cout << line << std::endl;
+    }
+    return 21;
+}
+
 int main() {
-    std::cout << aoc072() << std::endl;
+    std::cout << aoc082() << std::endl;
 }
