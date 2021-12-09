@@ -3,6 +3,7 @@
 #include <fstream>
 #include <iostream>
 #include <map>
+#include <queue>
 #include <sstream>
 #include <tuple>
 #include <vector>
@@ -768,6 +769,117 @@ int aoc082() {
     return sum;
 }
 
+int aoc091() {
+    std::ifstream file("input/09.txt");
+    std::string line;
+    std::vector<std::vector<int>> heights;
+    while (std::getline(file, line)) {
+        std::vector<int> row(line.size());
+        for (size_t i = 0; i < line.size(); i++) {
+            row[i] = line.at(i) - '0';
+        }
+        heights.push_back(row);
+    }
+
+    int risk = 0;
+    for (size_t i = 0; i < heights.size(); i++) {
+        for (size_t j = 0; j < heights[i].size(); j++) {
+            bool low = true;
+            for (size_t di = (i > 0 ? i - 1 : i); di <= (i < heights.size() - 1 ? i + 1 : i) && low; di++) {
+                if (di != i && heights[i][j] >= heights[di][j]) {
+                    low = false;
+                }
+            }
+            for (size_t dj = (j > 0 ? j - 1 : j); dj <= (j < heights[i].size() - 1 ? j + 1 : j) && low; dj++) {
+                if (dj != j && heights[i][j] >= heights[i][dj]) {
+                    low = false;
+                }
+            }
+            if (low) {
+                risk += heights[i][j] + 1;
+            }
+        }
+    }
+    return risk;
+}
+
+int aoc092() {
+    std::ifstream file("input/09.txt");
+    std::string line;
+    std::vector<std::vector<int>> heights;
+    while (std::getline(file, line)) {
+        std::vector<int> row(line.size());
+        for (size_t i = 0; i < line.size(); i++) {
+            row[i] = line.at(i) - '0';
+        }
+        heights.push_back(row);
+    }
+    // heights = {
+    //     {2, 1, 9, 9, 9, 4, 3, 2, 1, 0},
+    //     {3, 9, 8, 7, 8, 9, 4, 9, 2, 1},
+    //     {9, 8, 5, 6, 7, 8, 9, 8, 9, 2},
+    //     {8, 7, 6, 7, 8, 9, 6, 7, 8, 9},
+    //     {9, 8, 9, 9, 9, 6, 5, 6, 7, 8}};
+
+    std::vector<std::vector<int>>
+        basins(heights.size());
+    for (size_t i = 0; i < heights.size(); i++) {
+        basins[i] = std::vector<int>(heights[i].size(), 0);
+    }
+    int index = 0;
+    for (size_t i = 0; i < heights.size(); i++) {
+        for (size_t j = 0; j < heights[i].size(); j++) {
+            bool low = true;
+            for (size_t di = (i > 0 ? i - 1 : i); di <= (i < heights.size() - 1 ? i + 1 : i) && low; di++) {
+                if (di != i && heights[i][j] >= heights[di][j]) {
+                    low = false;
+                }
+            }
+            for (size_t dj = (j > 0 ? j - 1 : j); dj <= (j < heights[i].size() - 1 ? j + 1 : j) && low; dj++) {
+                if (dj != j && heights[i][j] >= heights[i][dj]) {
+                    low = false;
+                }
+            }
+            if (low) {
+                index++;
+                std::queue<std::vector<size_t>> q;
+                q.push({i, j});
+                while (!q.empty()) {
+                    std::vector<size_t> ij = q.front();
+                    q.pop();
+                    size_t i_ = ij[0];
+                    size_t j_ = ij[1];
+                    basins[i_][j_] = index;
+                    for (size_t di = (i_ > 0 ? i_ - 1 : i_); di <= (i_ < heights.size() - 1 ? i_ + 1 : i_); di++) {
+                        if (di != i_ && heights[di][j_] != 9 && basins[di][j_] == 0) {
+                            q.push({di, j_});
+                        }
+                    }
+                    for (size_t dj = (j_ > 0 ? j_ - 1 : j_); dj <= (j_ < heights[i_].size() - 1 ? j_ + 1 : j_); dj++) {
+                        if (dj != j_ && heights[i_][dj] != 9 && basins[i_][dj] == 0) {
+                            q.push({i_, dj});
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    std::vector<int> sizes(index, 0);
+    for (size_t i = 0; i < basins.size(); i++) {
+        for (size_t j = 0; j < basins[i].size(); j++) {
+            // char c = (char) basins[i][j] + '!';
+            // std::cout << c;
+            if (basins[i][j] != 0) {
+                sizes[basins[i][j] - 1]++;
+            }
+        }
+        // std::cout << std::endl;
+    }
+    std::sort(sizes.begin(), sizes.end());
+    return sizes[sizes.size() - 1] * sizes[sizes.size() - 2] * sizes[sizes.size() - 3];
+}
+
 int main() {
-    std::cout << aoc082() << std::endl;
+    std::cout << aoc092() << std::endl;
 }
