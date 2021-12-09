@@ -761,7 +761,6 @@ int aoc082() {
             std::vector<char> digit(digit_string.begin(), digit_string.end());
             std::sort(digit.begin(), digit.end());
             ss << map[digit];
-            
             line.erase(0, pos + 1);
         } while (pos != std::string::npos);
         sum += std::stoi(ss.str());
