@@ -2,6 +2,8 @@
 #include <cmath>
 #include <fstream>
 #include <iostream>
+#include <map>
+#include <sstream>
 #include <tuple>
 #include <vector>
 
@@ -636,13 +638,135 @@ int aoc081() {
     return cnt;
 }
 
+std::vector<std::vector<char>> cleanup(std::vector<std::vector<char>> digits, std::vector<char> s) {
+    for (size_t i = 0; i < digits.size(); i++) {
+        for (size_t j = 0; j < digits[i].size(); j++) {
+            for (size_t k = 0; k < 7; k++) {
+                if (digits[i][j] == s[k]) {
+                    digits[i].erase(digits[i].begin() + j);
+                    j--;
+                }
+            }
+        }
+        if (digits[i].size() == 0) {
+            digits.erase(digits.begin() + i);
+            i--;
+        }
+    }
+    std::sort(digits.begin(), digits.end(), [](std::vector<char> a, std::vector<char> b) {
+        return a.size() < b.size();
+    });
+    return digits;
+}
+
 int aoc082() {
     std::ifstream file("input/08.txt");
     std::string line;
+    int sum = 0;
     while (std::getline(file, line)) {
-        std::cout << line << std::endl;
+        std::vector<std::vector<char>> digits;
+        size_t pos;
+        do {
+            pos = line.find(" ");
+            std::string digit_string = line.substr(0, pos);
+            if (digit_string == "|") {
+                break;
+            }
+            std::vector<char> digit(digit_string.begin(), digit_string.end());
+            if (digit.size() != 7) {
+                digits.push_back(digit);
+            }
+            line.erase(0, pos + 1);
+        } while (pos != std::string::npos);
+        std::sort(digits.begin(), digits.end(), [](std::vector<char> a, std::vector<char> b) {
+            return a.size() < b.size();
+        });
+        std::vector<char> s(7, 'x');
+
+        for (auto x : digits[1]) { // 7
+            bool found = false;
+            for (auto y : digits[0]) { // 1
+                if (x == y) {
+                    found = true;
+                }
+            }
+            if (!found) {
+                s[0] = x;
+            }
+        }
+
+        for (size_t i = 0; i < 2; i++) {                           // 1
+            for (auto digit : {digits[6], digits[7], digits[8]}) { // 0, 6, 9
+                bool found = false;
+                for (auto y : digit) {
+                    if (digits[0][i] == y) {
+                        found = true;
+                    }
+                }
+                if (!found) {
+                    s[2] = digits[0][i];
+                    s[5] = digits[0][(i + 1) % 2];
+                }
+            }
+        }
+
+        digits = cleanup(digits, s);
+
+        for (auto x : digits[0]) {
+            for (auto y : digits[1]) { // 3, 4
+                if (x == y) {
+                    s[3] = x;
+                }
+            }
+        }
+
+        digits = cleanup(digits, s);
+
+        for (auto digit : {digits[2], digits[3], digits[4]}) { // 2, 5, 9
+            for (size_t i = 0; i < 2; i++) {
+                if (digit[i] != digits[0][0] && digit[i] != digits[1][0]) { // 3, 4
+                    s[4] = digit[i];
+                    s[6] = digit[(i + 1) % 2];
+                }
+            }
+        }
+
+        digits = cleanup(digits, s);
+
+        s[1] = digits[0][0];
+
+        std::vector<std::vector<char>> numbers = {
+            {s[0], s[1], s[2], s[4], s[5], s[6]},       // 0
+            {s[2], s[5]},                               // 1
+            {s[0], s[2], s[3], s[4], s[6]},             // 2
+            {s[0], s[2], s[3], s[5], s[6]},             // 3
+            {s[1], s[2], s[3], s[5]},                   // 4
+            {s[0], s[1], s[3], s[5], s[6]},             // 5
+            {s[0], s[1], s[3], s[4], s[5], s[6]},       // 6
+            {s[0], s[2], s[5]},                         // 7
+            {s[0], s[1], s[2], s[3], s[4], s[5], s[6]}, // 8
+            {s[0], s[1], s[2], s[3], s[5], s[6]}};      // 9
+        for (size_t i = 0; i < 10; i++) {
+            std::sort(numbers[i].begin(), numbers[i].end());
+        }
+        std::map<std::vector<char>, int> map;
+        for (size_t i = 0; i < 10; i++) {
+            map[numbers[i]] = i;
+        }
+        line.erase(0, 2);
+        std::stringstream ss("");
+        do {
+            pos = line.find(" ");
+            std::string digit_string = line.substr(0, pos);
+            std::vector<char> digit(digit_string.begin(), digit_string.end());
+            std::sort(digit.begin(), digit.end());
+            ss << map[digit];
+            
+            line.erase(0, pos + 1);
+        } while (pos != std::string::npos);
+        sum += std::stoi(ss.str());
     }
-    return 21;
+    return sum;
 }
 
 int main() {
