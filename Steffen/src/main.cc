@@ -5,6 +5,7 @@
 #include <map>
 #include <queue>
 #include <sstream>
+#include <stack>
 #include <tuple>
 #include <vector>
 
@@ -880,6 +881,116 @@ int aoc092() {
     return sizes[sizes.size() - 1] * sizes[sizes.size() - 2] * sizes[sizes.size() - 3];
 }
 
+int aoc101() {
+    std::ifstream file("input/10.txt");
+    std::string line;
+    int score = 0;
+    while (std::getline(file, line)) {
+        std::stack<char> s;
+        for (size_t i = 0; i < line.size(); i++) {
+            char c = line.at(i);
+            if (c == '(' || c == '[' || c == '{' || c == '<') {
+                s.push(c);
+            } else {
+                char p = s.top();
+                s.pop();
+                switch (p) {
+                case '(':
+                    p = ')';
+                    break;
+                case '[':
+                    p = ']';
+                    break;
+                case '{':
+                    p = '}';
+                    break;
+                case '<':
+                    p = '>';
+                    break;
+                }
+                if (p != c) {
+                    switch (c) {
+                    case ')':
+                        score += 3;
+                        break;
+                    case ']':
+                        score += 57;
+                        break;
+                    case '}':
+                        score += 1197;
+                        break;
+                    case '>':
+                        score += 25137;
+                        break;
+                    }
+                }
+            }
+        }
+    }
+    return score;
+}
+
+long long aoc102() {
+    std::ifstream file("input/10.txt");
+    std::string line;
+    std::vector<long long> scores;
+    while (std::getline(file, line)) {
+        std::stack<char> s;
+        bool corrupted = false;
+        for (size_t i = 0; i < line.size(); i++) {
+            char c = line.at(i);
+            if (c == '(' || c == '[' || c == '{' || c == '<') {
+                s.push(c);
+            } else {
+                char p = s.top();
+                s.pop();
+                switch (p) {
+                case '(':
+                    p = ')';
+                    break;
+                case '[':
+                    p = ']';
+                    break;
+                case '{':
+                    p = '}';
+                    break;
+                case '<':
+                    p = '>';
+                    break;
+                }
+                if (p != c) {
+                    corrupted = true;
+                }
+            }
+        }
+        if (!corrupted) {
+            long long score = 0;
+            while (!s.empty()) {
+                char p = s.top();
+                s.pop();
+                score *= 5;
+                switch (p) {
+                case '(':
+                    score += 1;
+                    break;
+                case '[':
+                    score += 2;
+                    break;
+                case '{':
+                    score += 3;
+                    break;
+                case '<':
+                    score += 4;
+                    break;
+                }
+            }
+            scores.push_back(score);
+        }
+    }
+    std::sort(scores.begin(), scores.end());
+    return scores[scores.size() / 2];
+}
+
 int main() {
-    std::cout << aoc092() << std::endl;
+    std::cout << aoc102() << std::endl;
 }
