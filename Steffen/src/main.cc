@@ -991,6 +991,107 @@ long long aoc102() {
     return scores[scores.size() / 2];
 }
 
+int aoc111() {
+    std::ifstream file("input/11.txt");
+    std::string line;
+    std::vector<std::vector<int>> octopusses(10);
+    for (size_t i = 0; i < 10; i++) {
+        std::getline(file, line);
+        octopusses[i] = std::vector<int>(10);
+        for (size_t j = 0; j < 10; j++) {
+            octopusses[i][j] = line.at(j) - '0';
+        }
+    }
+
+    int cnt = 0;
+    for (size_t step = 0; step < 100; step++) {
+        std::queue<std::vector<size_t>> q;
+        for (size_t i = 0; i < 10; i++) {
+            for (size_t j = 0; j < 10; j++) {
+                octopusses[i][j]++;
+                if (octopusses[i][j] == 10) {
+                    octopusses[i][j] = 0;
+                    cnt++;
+                    q.push({i, j});
+                }
+            }
+        }
+        while (!q.empty()) {
+            std::vector<size_t> ij = q.front();
+            q.pop();
+            size_t i = ij[0];
+            size_t j = ij[1];
+            for (size_t di = (i > 0 ? i - 1 : i); di <= (i < 9 ? i + 1 : i); di++) {
+                for (size_t dj = (j > 0 ? j - 1 : j); dj <= (j < 9 ? j + 1 : j); dj++) {
+                    if ((di != i || dj != j) && octopusses[di][dj] != 0) {
+                        octopusses[di][dj]++;
+                        if (octopusses[di][dj] == 10) {
+                            octopusses[di][dj] = 0;
+                            cnt++;
+                            q.push({di, dj});
+                        }
+                    }
+                }
+            }
+        }
+    }
+    return cnt;
+}
+
+int aoc112() {
+    std::ifstream file("input/11.txt");
+    std::string line;
+    std::vector<std::vector<int>> octopusses(10);
+    for (size_t i = 0; i < 10; i++) {
+        std::getline(file, line);
+        octopusses[i] = std::vector<int>(10);
+        for (size_t j = 0; j < 10; j++) {
+            octopusses[i][j] = line.at(j) - '0';
+        }
+    }
+
+    bool flash = false;
+    size_t step = 0;
+    for (; !flash; step++) {
+        std::queue<std::vector<size_t>> q;
+        for (size_t i = 0; i < 10; i++) {
+            for (size_t j = 0; j < 10; j++) {
+                octopusses[i][j]++;
+                if (octopusses[i][j] == 10) {
+                    octopusses[i][j] = 0;
+                    q.push({i, j});
+                }
+            }
+        }
+        while (!q.empty()) {
+            std::vector<size_t> ij = q.front();
+            q.pop();
+            size_t i = ij[0];
+            size_t j = ij[1];
+            for (size_t di = (i > 0 ? i - 1 : i); di <= (i < 9 ? i + 1 : i); di++) {
+                for (size_t dj = (j > 0 ? j - 1 : j); dj <= (j < 9 ? j + 1 : j); dj++) {
+                    if ((di != i || dj != j) && octopusses[di][dj] != 0) {
+                        octopusses[di][dj]++;
+                        if (octopusses[di][dj] == 10) {
+                            octopusses[di][dj] = 0;
+                            q.push({di, dj});
+                        }
+                    }
+                }
+            }
+        }
+        flash = true;
+        for (size_t i = 0; i < 10 && flash; i++) {
+            for (size_t j = 0; j < 10 && flash; j++) {
+                if (octopusses[i][j] != 0) {
+                    flash = false;
+                }
+            }
+        }
+    }
+    return step;
+}
+
 int main() {
-    std::cout << aoc102() << std::endl;
+    std::cout << aoc112() << std::endl;
 }
