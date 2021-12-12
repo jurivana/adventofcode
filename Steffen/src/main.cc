@@ -1174,12 +1174,15 @@ int aoc121() {
 
 void path2(std::vector<int> visited, int v, bool twice) {
     visited[v]++;
+    if (!big[v] && visited[v] > 1) {
+        twice = true;
+    }
     if (v == end) {
         cnt++;
     }
     for (size_t i = 0; i < n; i++) {
-        if (m[v][i] && (!visited[i] || big[i])) {
-            path2(visited, i, false);
+        if (m[v][i] && (visited[i] == 0 || big[i] || (visited[i] == 1 && !twice && i != start && i != end))) {
+            path2(visited, i, twice);
         }
     }
 }
