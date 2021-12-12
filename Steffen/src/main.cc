@@ -1092,6 +1092,141 @@ int aoc112() {
     return step;
 }
 
+int n;
+std::vector<std::vector<bool>> m;
+std::vector<bool> big;
+int start;
+int end;
+int cnt = 0;
+
+void path1(std::vector<bool> visited, int v) {
+    visited[v] = true;
+    if (v == end) {
+        cnt++;
+    }
+    for (size_t i = 0; i < n; i++) {
+        if (m[v][i] && (!visited[i] || big[i])) {
+            path1(visited, i);
+        }
+    }
+}
+
+int aoc121() {
+    std::ifstream file("input/12.txt");
+    std::string line;
+    std::map<std::string, int> map;
+    std::vector<std::vector<int>> edges;
+    int start;
+    int index = 0;
+    while (std::getline(file, line)) {
+        std::vector<int> e(2);
+        std::vector<std::string> names(2);
+        size_t pos = line.find("-");
+        names[0] = line.substr(0, pos);
+        line.erase(0, pos + 1);
+        names[1] = line;
+        for (size_t i = 0; i < 2; i++) {
+            if (!map.contains(names[i])) {
+                map[names[i]] = index;
+                index++;
+                if (names[i] == "start") {
+                    start = map[names[i]];
+                }
+                if (names[i] == "end") {
+                    end = map[names[i]];
+                }
+                big.push_back(names[i].at(0) <= 'Z');
+            }
+            e[i] = map[names[i]];
+        }
+        edges.push_back(e);
+    }
+    n = big.size();
+
+    // for (auto x : map) {
+    //     std::cout << x.first << " " << x.second << (big[x.second] ? " big" : "") << std::endl;
+    // }
+    // std::cout << start << " -> " << end << std::endl;
+    // for (auto e : edges) {
+    //     std::cout << e[0] << "-" << e[1] << std::endl;
+    // }
+
+    m = std::vector<std::vector<bool>>(n);
+    for (size_t i = 0; i < n; i++) {
+        m[i] = std::vector<bool>(n, false);
+    }
+    for (auto e : edges) {
+        m[e[0]][e[1]] = true;
+        m[e[1]][e[0]] = true;
+    }
+
+    // for (size_t i = 0; i < n; i++) {
+    //     for (size_t j = 0; j < n; j++) {
+    //         std::cout << m[i][j] << " ";
+    //     }
+    //     std::cout << std::endl;
+    // }
+
+    std::vector<bool> visited(n, false);
+    path1(visited, start);
+    return cnt;
+}
+
+void path2(std::vector<int> visited, int v, bool twice) {
+    visited[v]++;
+    if (v == end) {
+        cnt++;
+    }
+    for (size_t i = 0; i < n; i++) {
+        if (m[v][i] && (!visited[i] || big[i])) {
+            path2(visited, i, false);
+        }
+    }
+}
+
+int aoc122() {
+    std::ifstream file("input/12.txt");
+    std::string line;
+    std::map<std::string, int> map;
+    std::vector<std::vector<int>> edges;
+    int index = 0;
+    while (std::getline(file, line)) {
+        std::vector<int> e(2);
+        std::vector<std::string> names(2);
+        size_t pos = line.find("-");
+        names[0] = line.substr(0, pos);
+        line.erase(0, pos + 1);
+        names[1] = line;
+        for (size_t i = 0; i < 2; i++) {
+            if (!map.contains(names[i])) {
+                map[names[i]] = index;
+                index++;
+                if (names[i] == "start") {
+                    start = map[names[i]];
+                }
+                if (names[i] == "end") {
+                    end = map[names[i]];
+                }
+                big.push_back(names[i].at(0) <= 'Z');
+            }
+            e[i] = map[names[i]];
+        }
+        edges.push_back(e);
+    }
+    n = big.size();
+    m = std::vector<std::vector<bool>>(n);
+    for (size_t i = 0; i < n; i++) {
+        m[i] = std::vector<bool>(n, false);
+    }
+    for (auto e : edges) {
+        m[e[0]][e[1]] = true;
+        m[e[1]][e[0]] = true;
+    }
+    std::vector<int> visited(n, 0);
+    path2(visited, start, false);
+    return cnt;
+}
+
 int main() {
-    std::cout << aoc112() << std::endl;
+    std::cout << aoc122() << std::endl;
 }
