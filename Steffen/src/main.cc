@@ -1230,6 +1230,174 @@ int aoc122() {
     return cnt;
 }
 
+int aoc131() {
+    std::ifstream file("input/13.txt");
+    std::string line;
+    std::vector<std::vector<int>> points;
+    std::vector<std::vector<int>> bb = {{0, 0}, {0, 0}};
+    while (std::getline(file, line)) {
+        if (line == "") {
+            break;
+        }
+        std::vector<int> point(2);
+        size_t pos = line.find(",");
+        point[1] = std::stoi(line.substr(0, pos));
+        line.erase(0, pos + 1);
+        point[0] = std::stoi(line);
+        for (size_t i = 0; i < 2; i++) {
+            if (point[i] > bb[1][i]) {
+                bb[1][i] = point[i];
+            }
+        }
+        points.push_back(point);
+    }
+    std::vector<std::vector<bool>> paper(bb[1][0] + 1);
+    for (size_t i = 0; i < paper.size(); i++) {
+        paper[i] = std::vector<bool>(bb[1][1] + 1, false);
+    }
+    for (size_t i = 0; i < points.size(); i++) {
+        paper[points[i][0]][points[i][1]] = true;
+    }
+
+    while (std::getline(file, line)) {
+        line.erase(0, 11);
+        bool along_x = line.at(0) == 'x';
+        line.erase(0, 2);
+        int fold = std::stoi(line);
+
+        if (along_x) {
+            if (fold - bb[0][1] >= bb[1][1] - fold) {
+                // Nach links
+                for (size_t i = bb[0][0]; i <= bb[1][0]; i++) {
+                    for (size_t j = 0; j <= bb[1][1] - fold; j++) {
+                        paper[i][fold - j] = paper[i][fold - j] || paper[i][fold + j];
+                    }
+                }
+                bb[1][1] = fold - 1;
+            } else {
+                // Nach rechts
+                for (size_t i = bb[0][0]; i <= bb[1][0]; i++) {
+                    for (size_t j = 0; j <= fold - bb[0][1]; j++) {
+                        paper[i][fold + j] = paper[i][fold + j] || paper[i][fold - j];
+                    }
+                }
+                bb[0][1] = fold + 1;
+            }
+        } else {
+            if (fold - bb[0][0] >= bb[1][0] - fold) {
+                // Nach oben
+                for (size_t i = 0; i <= bb[1][0] - fold; i++) {
+                    for (size_t j = bb[0][1]; j <= bb[1][1]; j++) {
+                        paper[fold - i][j] = paper[fold - i][j] || paper[fold + i][j];
+                    }
+                }
+                bb[1][0] = fold - 1;
+            } else {
+                // Nach unten
+                for (size_t i = 0; i <= fold - bb[0][0]; i++) {
+                    for (size_t j = bb[0][1]; j <= bb[1][1]; j++) {
+                        paper[fold + i][j] = paper[fold + i][j] || paper[fold - i][j];
+                    }
+                }
+                bb[0][0] = fold + 1;
+            }
+        }
+        break;
+    }
+
+    int cnt = 0;
+    for (size_t i = bb[0][0]; i <= bb[1][0]; i++) {
+        for (size_t j = bb[0][1]; j <= bb[1][1]; j++) {
+            if (paper[i][j]) {
+                cnt++;
+            }
+        }
+    }
+    return cnt;
+}
+
+void aoc132() {
+    std::ifstream file("input/13.txt");
+    std::string line;
+    std::vector<std::vector<int>> points;
+    std::vector<std::vector<int>> bb = {{0, 0}, {0, 0}};
+    while (std::getline(file, line)) {
+        if (line == "") {
+            break;
+        }
+        std::vector<int> point(2);
+        size_t pos = line.find(",");
+        point[1] = std::stoi(line.substr(0, pos));
+        line.erase(0, pos + 1);
+        point[0] = std::stoi(line);
+        for (size_t i = 0; i < 2; i++) {
+            if (point[i] > bb[1][i]) {
+                bb[1][i] = point[i];
+            }
+        }
+        points.push_back(point);
+    }
+    std::vector<std::vector<bool>> paper(bb[1][0] + 1);
+    for (size_t i = 0; i < paper.size(); i++) {
+        paper[i] = std::vector<bool>(bb[1][1] + 1, false);
+    }
+    for (size_t i = 0; i < points.size(); i++) {
+        paper[points[i][0]][points[i][1]] = true;
+    }
+
+    while (std::getline(file, line)) {
+        line.erase(0, 11);
+        bool along_x = line.at(0) == 'x';
+        line.erase(0, 2);
+        int fold = std::stoi(line);
+
+        if (along_x) {
+            if (fold - bb[0][1] >= bb[1][1] - fold) {
+                // Nach links
+                for (size_t i = bb[0][0]; i <= bb[1][0]; i++) {
+                    for (size_t j = 0; j <= bb[1][1] - fold; j++) {
+                        paper[i][fold - j] = paper[i][fold - j] || paper[i][fold + j];
+                    }
+                }
+                bb[1][1] = fold - 1;
+            } else {
+                // Nach rechts
+                for (size_t i = bb[0][0]; i <= bb[1][0]; i++) {
+                    for (size_t j = 0; j <= fold - bb[0][1]; j++) {
+                        paper[i][fold + j] = paper[i][fold + j] || paper[i][fold - j];
+                    }
+                }
+                bb[0][1] = fold + 1;
+            }
+        } else {
+            if (fold - bb[0][0] >= bb[1][0] - fold) {
+                // Nach oben
+                for (size_t i = 0; i <= bb[1][0] - fold; i++) {
+                    for (size_t j = bb[0][1]; j <= bb[1][1]; j++) {
+                        paper[fold - i][j] = paper[fold - i][j] || paper[fold + i][j];
+                    }
+                }
+                bb[1][0] = fold - 1;
+            } else {
+                // Nach unten
+                for (size_t i = 0; i <= fold - bb[0][0]; i++) {
+                    for (size_t j = bb[0][1]; j <= bb[1][1]; j++) {
+                        paper[fold + i][j] = paper[fold + i][j] || paper[fold - i][j];
+                    }
+                }
+                bb[0][0] = fold + 1;
+            }
+        }
+    }
+
+    for (size_t i = bb[0][0]; i <= bb[1][0]; i++) {
+        for (size_t j = bb[0][1]; j <= bb[1][1]; j++) {
+            std::cout << (paper[i][j] ? "#" : ".");
+        }
+        std::cout << std::endl;
+    }
+}
+
 int main() {
-    std::cout << aoc122() << std::endl;
+    aoc132();
 }
