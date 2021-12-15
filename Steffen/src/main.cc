@@ -1592,7 +1592,21 @@ int aoc152() {
         }
         V.push_back(V_row);
     }
-    return dijkstra(V);
+
+    std::vector<std::vector<Vertex>> W(5 * V.size());
+    for (size_t i = 0; i < 5 * V.size(); i++) {
+        W[i] = std::vector<Vertex>(5 * V[0].size());
+        for (size_t j = 0; j < 5 * V[0].size(); j++) {
+            int offset = i / V.size() + j / V[0].size();
+            W[i][j].risk = V[i % V.size()][j % V[0].size()].risk + offset;
+            if (W[i][j].risk > 9) {
+                W[i][j].risk -= 9;
+            }
+            W[i][j].row = i;
+            W[i][j].col = j;
+        }
+    }
+    return dijkstra(W);
 }
 
 int main() {
