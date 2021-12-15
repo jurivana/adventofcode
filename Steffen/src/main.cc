@@ -1398,6 +1398,111 @@ void aoc132() {
     }
 }
 
+int aoc141() {
+    std::ifstream file("input/14.txt");
+    std::string line;
+
+    std::getline(file, line);
+    std::vector<char> polymer(line.size());
+    for (size_t i = 0; i < line.size(); i++) {
+        polymer[i] = line.at(i);
+    }
+    // for (auto c : polymer) {
+    //     std::cout << c;
+    // }
+    // std::cout << std::endl;
+
+    std::map<std::vector<char>, char> rules;
+    std::getline(file, line);
+    while (std::getline(file, line)) {
+        rules[{line.at(0), line.at(1)}] = line.at(6);
+    }
+
+    for (size_t i = 0; i < 10; i++) {
+        for (size_t j = 1; j < polymer.size(); j++) {
+            polymer.insert(polymer.begin() + j, rules[{polymer[j - 1], polymer[j]}]);
+            j++;
+        }
+        // for (auto c : polymer) {
+        //     std::cout << c;
+        // }
+        // std::cout << std::endl;
+    }
+
+    std::vector<int> quantities(26, 0);
+    for (size_t i = 0; i < polymer.size(); i++) {
+        quantities[polymer[i] - 'A']++;
+    }
+    std::sort(quantities.begin(), quantities.end());
+    bool zero = true;
+    for (size_t i = 0; i < quantities.size() && zero; i++) {
+        if (quantities[i] == 0) {
+            quantities.erase(quantities.begin());
+            i--;
+        } else {
+            zero = false;
+        }
+    }
+    return quantities[quantities.size() - 1] - quantities[0];
+}
+
+long long aoc142() {
+    std::ifstream file("input/14.txt");
+    std::string line;
+
+    std::getline(file, line);
+    std::vector<char> polymer(line.size());
+    for (size_t i = 0; i < line.size(); i++) {
+        polymer[i] = line.at(i);
+    }
+
+    std::map<std::vector<char>, char> rules;
+    std::getline(file, line);
+    while (std::getline(file, line)) {
+        rules[{line.at(0), line.at(1)}] = line.at(6);
+    }
+
+    std::map<std::vector<char>, long long> cnt;
+    for (auto rule : rules) {
+        cnt[rule.first] = 0;
+    }
+    for (size_t i = 1; i < polymer.size(); i++) {
+        cnt[{polymer[i - 1], polymer[i]}]++;
+    }
+
+    for (size_t i = 0; i < 40; i++) {
+        std::map<std::vector<char>, long long> next_cnt;
+        for (auto rule : rules) {
+            next_cnt[rule.first] = 0;
+        }
+        for (auto x : cnt) {
+            char a = x.first[0];
+            char b = rules[x.first];
+            char c = x.first[1];
+            long long n = x.second;
+            next_cnt[{a, b}] += n;
+            next_cnt[{b, c}] += n;
+        }
+        cnt = next_cnt;
+    }
+
+    std::vector<long long> quantities(26, 0);
+    for (auto x : cnt) {
+        quantities[x.first[0] - 'A'] += x.second;
+    }
+    std::sort(quantities.begin(), quantities.end());
+    bool zero = true;
+    for (size_t i = 0; i < quantities.size() && zero; i++) {
+        if (quantities[i] == 0) {
+            quantities.erase(quantities.begin());
+            i--;
+        } else {
+            zero = false;
+        }
+    }
+    return quantities[quantities.size() - 1] - quantities[0] + 1; // + 1 für das letzte Element
+}
+
 int main() {
-    aoc132();
+    std::cout << aoc142() << std::endl; // 3152788426518
 }
