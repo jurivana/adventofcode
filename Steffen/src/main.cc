@@ -1490,6 +1490,7 @@ long long aoc142() {
     for (auto x : cnt) {
         quantities[x.first[0] - 'A'] += x.second;
     }
+    quantities[polymer[polymer.size() - 1] - 'A']++;
     std::sort(quantities.begin(), quantities.end());
     bool zero = true;
     for (size_t i = 0; i < quantities.size() && zero; i++) {
@@ -1500,9 +1501,20 @@ long long aoc142() {
             zero = false;
         }
     }
-    return quantities[quantities.size() - 1] - quantities[0] + 1; // + 1 für das letzte Element
+    return quantities[quantities.size() - 1] - quantities[0];
+}
+
+int aoc151() {
+    std::ifstream file("input/15.txt");
+    std::string line;
+    while (std::getline(file, line)) {
+        std::cout << line << std::endl;
+    }
+
+    return 21;
 }
 
 int main() {
-    std::cout << aoc142() << std::endl; // 3152788426518
+    std::cout << aoc151() << std::endl;
 }
+// cd build && make -j16 && cd .. && ./build/main
