@@ -1507,14 +1507,74 @@ long long aoc142() {
 int aoc151() {
     std::ifstream file("input/15.txt");
     std::string line;
+    std::vector<std::vector<int>> risk;
     while (std::getline(file, line)) {
-        std::cout << line << std::endl;
+        std::vector<int> row(line.size());
+        for (size_t i = 0; i < line.size(); i++) {
+            row[i] = line.at(i) - '0';
+        }
+        risk.push_back(row);
     }
 
-    return 21;
+    std::vector<std::vector<int>> dist(risk.size());
+    std::vector<std::vector<std::vector<int>>> prev(risk.size());
+    std::vector<std::vector<int>> q;
+    std::vector<std::vector<int>> h(risk.size());
+    for (size_t i = 0; i < risk.size(); i++) {
+        dist[i] = std::vector<int>(risk[i].size(), std::numeric_limits<int>::max());
+        prev[i] = std::vector<std::vector<int>>(risk[i].size(), {-1, -1});
+        h[i] = std::vector<int>(risk[i].size());
+        for (size_t j = 0; j < risk[i].size(); j++) {
+            q.push_back({(int) i, (int) j});
+            h[i][j] = risk.size() - 1 - i + risk[0].size() - 1 - j;
+        }
+    }
+    dist[0][0] = 0;
+
+    while (q.size() > 0) {
+        std::cout << q.size() << std::endl;
+        std::sort(q.begin(), q.end(), [dist, h](std::vector<int> a, std::vector<int> b) {
+            return dist[a[0]][a[1]] + h[a[0]][a[1]] < dist[b[0]][b[1]] + h[b[0]][b[1]];
+        });
+        int i = q[0][0];
+        int j = q[0][1];
+        q.erase(q.begin());
+
+        if (i == risk.size() - 1 && j == risk[0].size() - 1) {
+            return dist[i][j];
+        }
+
+        std::vector<std::vector<int>> neighbors;
+        if (i > 0) {
+            neighbors.push_back({i - 1, j});
+        }
+        if (i < risk.size() - 1) {
+            neighbors.push_back({i + 1, j});
+        }
+        if (j > 0) {
+            neighbors.push_back({i, j - 1});
+        }
+        if (j < risk[0].size() - 1) {
+            neighbors.push_back({i, j + 1});
+        }
+        for (size_t k = 0; k < neighbors.size(); k++) {
+            int di = neighbors[k][0];
+            int dj = neighbors[k][1];
+            int alt = dist[i][j] + risk[di][dj];
+            if (alt < dist[di][dj]) {
+                dist[di][dj] = alt;
+                prev[di][dj] = {i, j};
+            }
+        }
+    }
+    return -1;
+}
+
+int aoc152() {
+    return 69;
 }
 
 int main() {
-    std::cout << aoc151() << std::endl;
+    std::cout << aoc152() << std::endl;
 }
 // cd build && make -j16 && cd .. && ./build/main
