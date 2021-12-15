@@ -2,12 +2,15 @@
 #include <cmath>
 #include <fstream>
 #include <iostream>
+#include <limits>
 #include <map>
 #include <queue>
 #include <sstream>
 #include <stack>
 #include <tuple>
 #include <vector>
+
+#include "overiority_queue.h"
 
 int aoc011() {
     std::ifstream file("input/01.txt");
@@ -1504,74 +1507,92 @@ long long aoc142() {
     return quantities[quantities.size() - 1] - quantities[0];
 }
 
-int aoc151() {
-    std::ifstream file("input/15.txt");
-    std::string line;
-    std::vector<std::vector<int>> risk;
-    while (std::getline(file, line)) {
-        std::vector<int> row(line.size());
-        for (size_t i = 0; i < line.size(); i++) {
-            row[i] = line.at(i) - '0';
+struct Vertex {
+    int risk;
+    size_t row;
+    size_t col;
+    int dist;
+    bool inq;
+};
+
+int dijkstra(std::vector<std::vector<Vertex>> V) {
+    auto cmp = [](Vertex a, Vertex b) {
+        return a.dist > b.dist;
+    };
+    OveriorityQueue<Vertex, decltype(cmp)> q(cmp, V.size() * V[0].size());
+    for (auto V_row : V) {
+        for (auto v : V_row) {
+            V[v.row][v.col].dist = v.row == 0 && v.col == 0 ? 0 : std::numeric_limits<int>::max();
+            q.push(V[v.row][v.col], v.row * V[0].size() + v.col);
+            V[v.row][v.col].inq = true;
         }
-        risk.push_back(row);
     }
 
-    std::vector<std::vector<int>> dist(risk.size());
-    std::vector<std::vector<std::vector<int>>> prev(risk.size());
-    std::vector<std::vector<int>> q;
-    std::vector<std::vector<int>> h(risk.size());
-    for (size_t i = 0; i < risk.size(); i++) {
-        dist[i] = std::vector<int>(risk[i].size(), std::numeric_limits<int>::max());
-        prev[i] = std::vector<std::vector<int>>(risk[i].size(), {-1, -1});
-        h[i] = std::vector<int>(risk[i].size());
-        for (size_t j = 0; j < risk[i].size(); j++) {
-            q.push_back({(int) i, (int) j});
-            h[i][j] = risk.size() - 1 - i + risk[0].size() - 1 - j;
-        }
-    }
-    dist[0][0] = 0;
+    while (!q.empty()) {
+        Vertex u = q.pop();
+        V[u.row][u.col].inq = false;
 
-    while (q.size() > 0) {
-        std::cout << q.size() << std::endl;
-        std::sort(q.begin(), q.end(), [dist, h](std::vector<int> a, std::vector<int> b) {
-            return dist[a[0]][a[1]] + h[a[0]][a[1]] < dist[b[0]][b[1]] + h[b[0]][b[1]];
-        });
-        int i = q[0][0];
-        int j = q[0][1];
-        q.erase(q.begin());
-
-        if (i == risk.size() - 1 && j == risk[0].size() - 1) {
-            return dist[i][j];
+        if (u.row == V.size() - 1 && u.col == V[0].size() - 1) {
+            return u.dist;
         }
 
-        std::vector<std::vector<int>> neighbors;
-        if (i > 0) {
-            neighbors.push_back({i - 1, j});
+        std::vector<Vertex> neighbors;
+        if (u.row > 0) {
+            neighbors.push_back(V[u.row - 1][u.col]);
         }
-        if (i < risk.size() - 1) {
-            neighbors.push_back({i + 1, j});
+        if (u.row < V.size() - 1) {
+            neighbors.push_back(V[u.row + 1][u.col]);
         }
-        if (j > 0) {
-            neighbors.push_back({i, j - 1});
+        if (u.col > 0) {
+            neighbors.push_back(V[u.row][u.col - 1]);
         }
-        if (j < risk[0].size() - 1) {
-            neighbors.push_back({i, j + 1});
+        if (u.col < V[0].size() - 1) {
+            neighbors.push_back(V[u.row][u.col + 1]);
         }
-        for (size_t k = 0; k < neighbors.size(); k++) {
-            int di = neighbors[k][0];
-            int dj = neighbors[k][1];
-            int alt = dist[i][j] + risk[di][dj];
-            if (alt < dist[di][dj]) {
-                dist[di][dj] = alt;
-                prev[di][dj] = {i, j};
+
+        for (Vertex v : neighbors) {
+            if (v.inq) {
+                int alt = u.dist + v.risk;
+                if (alt < v.dist) {
+                    V[v.row][v.col].dist = alt;
+                    q.push(V[v.row][v.col], v.row * V[0].size() + v.col);
+                }
             }
         }
     }
     return -1;
 }
 
+int aoc151() {
+    std::ifstream file("input/15.txt");
+    std::string line;
+    std::vector<std::vector<Vertex>> V;
+    while (std::getline(file, line)) {
+        std::vector<Vertex> V_row(line.size());
+        for (size_t i = 0; i < line.size(); i++) {
+            V_row[i].risk = line.at(i) - '0';
+            V_row[i].row = V.size();
+            V_row[i].col = i;
+        }
+        V.push_back(V_row);
+    }
+    return dijkstra(V);
+}
+
 int aoc152() {
-    return 69;
+    std::ifstream file("input/15.txt");
+    std::string line;
+    std::vector<std::vector<Vertex>> V;
+    while (std::getline(file, line)) {
+        std::vector<Vertex> V_row(line.size());
+        for (size_t i = 0; i < line.size(); i++) {
+            V_row[i].risk = line.at(i) - '0';
+            V_row[i].row = V.size();
+            V_row[i].col = i;
+        }
+        V.push_back(V_row);
+    }
+    return dijkstra(V);
 }
 
 int main() {
