@@ -47,10 +47,6 @@ public:
         throw std::logic_error("Pop on empty priority queue");
     }
 
-    std::priority_queue<std::pair<T, I>, std::vector<std::pair<T, I>>, std::function<bool(std::pair<T, I>, std::pair<T, I>)>> tmp() {
-        return q_;
-    }
-
 private:
     std::priority_queue<std::pair<T, I>, std::vector<std::pair<T, I>>, std::function<bool(std::pair<T, I>, std::pair<T, I>)>> q_;
 
