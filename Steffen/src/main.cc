@@ -1609,7 +1609,158 @@ int aoc152() {
     return dijkstra(W);
 }
 
+std::vector<bool> bits(0);
+int sum = 0;
+
+long long decode(std::vector<bool> bin) {
+    long long x = 0;
+    for (size_t i = 0; i < bin.size(); i++) {
+        x <<= 1;
+        x |= bin[i];
+    }
+    return x;
+}
+
+std::pair<int, long long> decode_packet(int start, int depth) {
+    for (size_t i = 0; i < depth; i++) {
+        std::cout << "    ";
+    }
+    int version = decode(std::vector<bool>(bits.begin() + start, bits.begin() + start + 3));
+    sum += version;
+    int type = decode(std::vector<bool>(bits.begin() + start + 3, bits.begin() + start + 6));
+    std::cout << "[" << start << "] V " << version << " T " << type;
+    if (type == 4) {
+        int idx = start + 6;
+        bool more;
+        std::vector<bool> literal;
+        do {
+            more = bits[idx];
+            idx++;
+            for (size_t i = 0; i < 4; i++) {
+                literal.push_back(bits[idx]);
+                idx++;
+            }
+        } while (more);
+        long long x = decode(literal);
+        std::cout << " -> " << x << std::endl;
+        return {idx, x};
+    } else {
+        bool length_type = bits[start + 6];
+        std::cout << " I " << length_type;
+        int idx;
+        std::vector<long long> operands;
+        if (!length_type) {
+            int length = decode(std::vector<bool>(bits.begin() + start + 7, bits.begin() + start + 22));
+            std::cout << " L " << length << std::endl;
+            idx = start + 22;
+            while (idx < start + 22 + length) {
+                std::pair<int, long long> pair = decode_packet(idx, depth + 1);
+                idx = pair.first;
+                operands.push_back(pair.second);
+            }
+        } else {
+            int num = decode(std::vector<bool>(bits.begin() + start + 7, bits.begin() + start + 18));
+            std::cout << " N " << num << std::endl;
+            idx = start + 18;
+            for (size_t i = 0; i < num; i++) {
+                std::pair<int, long long> pair = decode_packet(idx, depth + 1);
+                idx = pair.first;
+                operands.push_back(pair.second);
+            }
+        }
+        for (size_t i = 0; i < depth; i++) {
+            std::cout << "    ";
+        }
+        long long result;
+        switch (type) {
+        case 0:
+            std::cout << "+( ";
+            result = 0;
+            for (size_t i = 0; i < operands.size(); i++) {
+                result += operands[i];
+            }
+            break;
+        case 1:
+            std::cout << "*( ";
+            result = 1;
+            for (size_t i = 0; i < operands.size(); i++) {
+                result *= operands[i];
+            }
+            break;
+        case 2:
+            std::cout << "min( ";
+            result = std::numeric_limits<long long>::max();
+            for (size_t i = 0; i < operands.size(); i++) {
+                if (operands[i] < result) {
+                    result = operands[i];
+                }
+            }
+            break;
+        case 3:
+            std::cout << "max( ";
+            result = 0;
+            for (size_t i = 0; i < operands.size(); i++) {
+                if (operands[i] > result) {
+                    result = operands[i];
+                }
+            }
+            break;
+        case 5:
+            std::cout << ">( ";
+            result = operands[0] > operands[1];
+            break;
+        case 6:
+            std::cout << "<( ";
+            result = operands[0] < operands[1];
+            break;
+        case 7:
+            std::cout << "==( ";
+            result = operands[0] == operands[1];
+            break;
+        }
+        for (size_t i = 0; i < operands.size(); i++) {
+            std::cout << operands[i] << " ";
+        }
+        std::cout << ") = " << result << std::endl;
+        return {idx, result};
+    }
+}
+
+int aoc161() {
+    std::ifstream file("input/16.txt");
+    std::string line;
+    std::getline(file, line);
+    for (size_t i = 0; i < line.size(); i++) {
+        char c = line.at(i);
+        char hex = c < 'A' ? c - '0' : c - 'A' + 10;
+        for (size_t j = 0; j < 4; j++) {
+            bits.push_back(hex >> (3 - j) & 1);
+        }
+    }
+    // for (auto b : bits) {
+    //     std::cout << b;
+    // }
+    // std::cout << std::endl;
+
+    decode_packet(0, 0);
+    return sum;
+}
+
+long long aoc162() {
+    std::ifstream file("input/16.txt");
+    std::string line;
+    std::getline(file, line);
+    for (size_t i = 0; i < line.size(); i++) {
+        char c = line.at(i);
+        char hex = c < 'A' ? c - '0' : c - 'A' + 10;
+        for (size_t j = 0; j < 4; j++) {
+            bits.push_back(hex >> (3 - j) & 1);
+        }
+    }
+    return decode_packet(0, 0).second;
+}
+
 int main() {
-    std::cout << aoc152() << std::endl;
+    std::cout << aoc162() << std::endl;
 }
 // cd build && make -j16 && cd .. && ./build/main
