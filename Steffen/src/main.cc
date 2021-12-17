@@ -1760,7 +1760,110 @@ long long aoc162() {
     return decode_packet(0, 0).second;
 }
 
+int aoc171() {
+    std::vector<std::vector<int>> target = {{137, -98}, {171, -73}};
+    std::vector<std::vector<int>> pos;
+    std::vector<int> vel;
+    int maxmax;
+    for (int up = 0; up < 100; up++) {
+        pos = {{0, 0}};
+        vel = {{17, up}};
+        bool hit = false;
+        bool deep = false;
+        int max = 0;
+        for (size_t i = 0; !deep; i++) {
+            std::vector<int> new_pos = pos[pos.size() - 1];
+            new_pos[0] += vel[0];
+            new_pos[1] += vel[1];
+            if (new_pos[0] >= target[0][0] && new_pos[0] <= target[1][0] && new_pos[1] >= target[0][1] && new_pos[1] <= target[1][1]) {
+                hit = true;
+            }
+            if (new_pos[1] < target[0][1]) {
+                deep = true;
+            }
+            if (new_pos[1] > max) {
+                max = new_pos[1];
+            }
+            pos.push_back(new_pos);
+            if (vel[0] < 0) {
+                vel[0]++;
+            }
+            if (vel[0] > 0) {
+                vel[0]--;
+            }
+            vel[1]--;
+        }
+        // std::cout << up << " hit " << hit << " max " << max << std::endl;
+        if (hit) {
+            maxmax = max;
+        }
+    }
+
+    // for (int y = 0; y > -100; y--) {
+    //     for (int x = 0; x < 173; x++) {
+    //         std::vector<int> a = {x, y};
+    //         auto find = std::find(pos.begin(), pos.end(), a);
+    //         if (find == pos.begin()) {
+    //             std::cout << "S";
+    //         } else if (find != pos.end()) {
+    //             std::cout << "#";
+    //         } else {
+    //             if (x >= target[0][0] && x <= target[1][0] && y >= target[0][1] && y <= target[1][1]) {
+    //                 std::cout << "T";
+    //             } else {
+    //                 std::cout << ".";
+    //             }
+    //         }
+    //     }
+    //     std::cout << std::endl;
+    // }
+
+    return maxmax;
+}
+
+int aoc172() {
+    std::vector<std::vector<int>> target = {{137, -98}, {171, -73}};
+    std::vector<std::vector<int>> pos;
+    std::vector<int> vel;
+    int cnt = 0;
+    for (int x = 0; x < 200; x++) {
+        for (int y = -100; y < 100; y++) {
+            pos = {{0, 0}};
+            vel = {{x, y}};
+            bool hit = false;
+            bool deep = false;
+            int max = 0;
+            for (size_t i = 0; !deep; i++) {
+                std::vector<int> new_pos = pos[pos.size() - 1];
+                new_pos[0] += vel[0];
+                new_pos[1] += vel[1];
+                if (new_pos[0] >= target[0][0] && new_pos[0] <= target[1][0] && new_pos[1] >= target[0][1] && new_pos[1] <= target[1][1]) {
+                    hit = true;
+                }
+                if (new_pos[1] < target[0][1]) {
+                    deep = true;
+                }
+                if (new_pos[1] > max) {
+                    max = new_pos[1];
+                }
+                pos.push_back(new_pos);
+                if (vel[0] < 0) {
+                    vel[0]++;
+                }
+                if (vel[0] > 0) {
+                    vel[0]--;
+                }
+                vel[1]--;
+            }
+            if (hit) {
+                cnt++;
+            }
+        }
+    }
+    return cnt;
+}
+
 int main() {
-    std::cout << aoc162() << std::endl;
+    std::cout << aoc172() << std::endl;
 }
 // cd build && make -j16 && cd .. && ./build/main
