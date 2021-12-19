@@ -4,6 +4,7 @@
 #include <iostream>
 #include <limits>
 #include <map>
+#include <memory>
 #include <queue>
 #include <sstream>
 #include <stack>
@@ -1863,7 +1864,164 @@ int aoc172() {
     return cnt;
 }
 
+class SnailfishNumber {
+public:
+    SnailfishNumber(int number) : number_(number) {}
+
+    SnailfishNumber(std::string str) {
+        if (str.at(0) != '[') {
+            number_ = std::stoi(str);
+        } else {
+            number_ = -1;
+            size_t pos;
+            size_t cnt = 0;
+            bool found = false;
+            for (pos = 0; pos < str.size() && !found; pos++) {
+                if (str.at(pos) == '[') {
+                    cnt++;
+                }
+                if (str.at(pos) == ',' && cnt == 1) {
+                    found = true;
+                }
+                if (str.at(pos) == ']') {
+                    cnt--;
+                }
+            }
+            pos--;
+            left_ = new SnailfishNumber(str.substr(1, pos - 1));
+            left_->parent_ = this;
+            right_ = new SnailfishNumber(str.substr(pos + 1, str.size() - pos - 2));
+            right_->parent_ = this;
+        }
+    }
+
+    friend std::ostream& operator<<(std::ostream& out, const SnailfishNumber& s);
+
+    SnailfishNumber operator+(const SnailfishNumber& s) const {
+        std::stringstream ss("");
+        ss << "[" << *this << "," << s << "]" << std::endl;
+        SnailfishNumber sum(ss.str());
+        sum.reduce();
+        return sum;
+    }
+
+    int magnitude() {
+        if (number_ < 0) {
+            return 3 * left_->magnitude() + 2 * right_->magnitude();
+        } else {
+            return number_;
+        }
+    }
+
+private:
+    void reduce() {
+        bool reduced;
+        do {
+            reduced = true;
+            if (explode()) {
+                reduced = false;
+            } else if (split()) {
+                reduced = false;
+            }
+        } while (!reduced);
+    }
+
+    bool explode() {
+        std::vector<std::pair<SnailfishNumber*, int>> v = inorder(0);
+        for (size_t i = 0; i < v.size(); i++) {
+            if (v[i].second > 4) {
+                if (i > 0) {
+                    v[i - 1].first->number_ += v[i].first->number_;
+                }
+                if (i < v.size() - 2) {
+                    v[i + 2].first->number_ += v[i + 1].first->number_;
+                }
+                SnailfishNumber* p = v[i].first->parent_;
+                p->number_ = 0;
+                p->left_ = nullptr;
+                p->right_ = nullptr;
+                return true;
+            }
+        }
+        return false;
+    }
+
+    bool split() {
+        std::vector<std::pair<SnailfishNumber*, int>> v = inorder(0);
+        for (size_t i = 0; i < v.size(); i++) {
+            int n = v[i].first->number_;
+            if (n > 9) {
+                v[i].first->number_ = -1;
+                v[i].first->left_ = new SnailfishNumber(n / 2);
+                v[i].first->left_->parent_ = v[i].first;
+                v[i].first->right_ = new SnailfishNumber(n % 2 == 0 ? n / 2 : n / 2 + 1);
+                v[i].first->right_->parent_ = v[i].first;
+                return true;
+            }
+        }
+        return false;
+    }
+
+    std::vector<std::pair<SnailfishNumber*, int>> inorder(int depth) {
+        if (number_ < 0) {
+            std::vector<std::pair<SnailfishNumber*, int>> v = left_->inorder(depth + 1);
+            std::vector<std::pair<SnailfishNumber*, int>> w = right_->inorder(depth + 1);
+            v.insert(v.end(), w.begin(), w.end());
+            return v;
+        } else {
+            return {{this, depth}};
+        }
+    }
+
+    int number_;
+    SnailfishNumber* left_;
+    SnailfishNumber* right_;
+    SnailfishNumber* parent_;
+};
+
+std::ostream& operator<<(std::ostream& out, const SnailfishNumber& s) {
+    if (s.number_ < 0) {
+        out << "[" << *s.left_ << "," << *s.right_ << "]";
+    } else {
+        out << s.number_;
+    }
+    return out;
+}
+
+int aoc181() {
+    std::ifstream file("input/18.txt");
+    std::string line;
+    std::getline(file, line);
+    SnailfishNumber sum(line);
+    while (std::getline(file, line)) {
+        SnailfishNumber x(line);
+        sum = sum + x;
+    }
+    return sum.magnitude();
+}
+
+int aoc182() {
+    std::ifstream file("input/18.txt");
+    std::string line;
+    std::vector<SnailfishNumber> numbers;
+    while (std::getline(file, line)) {
+        numbers.push_back(SnailfishNumber(line));
+    }
+    int max = 0;
+    for (size_t i = 0; i < numbers.size(); i++) {
+        for (size_t j = 0; j < numbers.size(); j++) {
+            if (i != j) {
+                int mag = (numbers[i] + numbers[j]).magnitude();
+                if (mag > max) {
+                    max = mag;
+                }
+            }
+        }
+    }
+    return max;
+}
+
 int main() {
-    std::cout << aoc172() << std::endl;
+    std::cout << aoc182() << std::endl;
 }
 // cd build && make -j16 && cd .. && ./build/main
