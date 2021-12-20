@@ -2253,7 +2253,121 @@ int aoc192() {
     return max;
 }
 
+void print_image(std::pair<std::vector<std::vector<bool>>, bool> image) {
+    for (size_t j = 0; j < image.first[0].size() + 2; j++) {
+        std::cout << (image.second ? "\u2588" : ".");
+    }
+    std::cout << std::endl;
+
+    for (size_t i = 0; i < image.first.size(); i++) {
+        std::cout << (image.second ? "\u2588" : ".");
+        for (size_t j = 0; j < image.first[0].size(); j++) {
+            std::cout << (image.first[i][j] ? "\u2588" : ".");
+        }
+        std::cout << (image.second ? "\u2588" : ".") << std::endl;
+    }
+    for (size_t j = 0; j < image.first[0].size() + 2; j++) {
+        std::cout << (image.second ? "\u2588" : ".");
+    }
+    std::cout << std::endl;
+}
+
+std::pair<std::vector<std::vector<bool>>, bool> enhance(std::pair<std::vector<std::vector<bool>>, bool> image, std::vector<bool> algorithm) {
+    std::vector<std::vector<bool>> enhanced(image.first.size() + 2);
+    for (int i = 0; i < (int) enhanced.size(); i++) {
+        enhanced[i] = std::vector<bool>(image.first[0].size() + 2);
+        for (int j = 0; j < (int) enhanced[0].size(); j++) {
+            std::vector<bool> kernel;
+            for (int di = i - 2; di <= i; di++) {
+                for (int dj = j - 2; dj <= j; dj++) {
+                    if (di >= 0 && di < image.first.size() && dj >= 0 && dj < image.first[0].size()) {
+                        kernel.push_back(image.first[di][dj]);
+                    } else {
+                        kernel.push_back(image.second);
+                    }
+                }
+            }
+            enhanced[i][j] = algorithm[decode(kernel)];
+        }
+    }
+    return {enhanced, image.second ? algorithm[511] : algorithm[0]};
+}
+
+int aoc201() {
+    std::ifstream file("input/20.txt");
+    std::string line;
+    std::getline(file, line);
+    std::vector<bool> algorithm(line.size());
+    for (size_t i = 0; i < line.size(); i++) {
+        algorithm[i] = line.at(i) == '#';
+    }
+    std::getline(file, line);
+    std::pair<std::vector<std::vector<bool>>, bool> image;
+    while (std::getline(file, line)) {
+        std::vector<bool> row(line.size());
+        for (size_t i = 0; i < line.size(); i++) {
+            row[i] = line.at(i) == '#';
+        }
+        image.first.push_back(row);
+    }
+    image.second = false;
+
+    print_image(image);
+    for (size_t i = 0; i < 2; i++) {
+        image = enhance(image, algorithm);
+        std::cout << std::endl;
+        print_image(image);
+    }
+
+    int cnt = 0;
+    for (size_t i = 0; i < image.first.size(); i++) {
+        for (size_t j = 0; j < image.first.size(); j++) {
+            if (image.first[i][j]) {
+                cnt++;
+            }
+        }
+    }
+    return cnt;
+}
+
+int aoc202() {
+    std::ifstream file("input/20.txt");
+    std::string line;
+    std::getline(file, line);
+    std::vector<bool> algorithm(line.size());
+    for (size_t i = 0; i < line.size(); i++) {
+        algorithm[i] = line.at(i) == '#';
+    }
+    std::getline(file, line);
+    std::pair<std::vector<std::vector<bool>>, bool> image;
+    while (std::getline(file, line)) {
+        std::vector<bool> row(line.size());
+        for (size_t i = 0; i < line.size(); i++) {
+            row[i] = line.at(i) == '#';
+        }
+        image.first.push_back(row);
+    }
+    image.second = false;
+
+    print_image(image);
+    for (size_t i = 0; i < 50; i++) {
+        image = enhance(image, algorithm);
+        std::cout << std::endl;
+        print_image(image);
+    }
+
+    int cnt = 0;
+    for (size_t i = 0; i < image.first.size(); i++) {
+        for (size_t j = 0; j < image.first.size(); j++) {
+            if (image.first[i][j]) {
+                cnt++;
+            }
+        }
+    }
+    return cnt;
+}
+
 int main() {
-    std::cout << aoc192() << std::endl;
+    std::cout << aoc202() << std::endl;
 }
 // cd build && make -j16 && cd .. && ./build/main
