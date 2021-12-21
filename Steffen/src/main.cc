@@ -2367,7 +2367,116 @@ int aoc202() {
     return cnt;
 }
 
+int aoc211() {
+    std::vector<int> space = {4 - 1, 1 - 1};
+    std::vector<int> score = {0, 0};
+    int die = 1 - 1;
+    int cnt = 0;
+    int winner = -1;
+    while (winner < 0) {
+        for (int i = 0; i < 2 && winner < 0; i++) {
+            int move = 0;
+            for (int j = 0; j < 3; j++) {
+                move += die + 1;
+                die = (die + 1) % 100;
+                cnt++;
+            }
+            space[i] = (space[i] + move) % 10;
+            score[i] += space[i] + 1;
+            if (score[i] >= 1000) {
+                winner = i;
+            }
+        }
+    }
+    return score[(winner + 1) % 2] * cnt;
+}
+
+std::vector<long long> number_of_wins_by_turns;
+
+void rec(int space, int score, int turn) {
+    if (score >= 21) {
+        number_of_wins_by_turns[turn]++;
+        return;
+    }
+
+    for (int die1 = 1; die1 <= 3; die1++) {
+        for (int die2 = 1; die2 <= 3; die2++) {
+            for (int die3 = 1; die3 <= 3; die3++) {
+                int next_space = (space + die1 + die2 + die3 - 1) % 10 + 1;
+                rec(next_space, score + next_space, turn + 1);
+            }
+        }
+    }
+}
+
+long long pow(long long base, int exponent) {
+    long long power = 1;
+    for (int i = 0; i < exponent; i++) {
+        power *= base;
+    }
+    return power;
+}
+
+long long aoc212() {
+    std::vector<int> space = {4, 8};
+    std::vector<std::vector<long long>> nowbt(2);
+    std::vector<std::vector<long long>> from(2);
+    for (int i = 0; i < 2; i++) {
+        number_of_wins_by_turns = std::vector<long long>(12, 0);
+        rec(space[i], 0, 0);
+        nowbt[i] = number_of_wins_by_turns;
+        
+        from[i] = std::vector<long long>(12, 0);
+        long long single_universes = 1;
+        for (size_t j = 0; j < 12; j++) {
+            single_universes *= 27;
+            from[i][j] = single_universes;
+            single_universes -= nowbt[i][j];
+        }   
+    }
+
+    // AB HIER QUATSCH
+
+    long double sum0 = 0;
+    long double sum1 = 0;
+    for (int i = 0; i < 11; i++) {
+        std::cout << i << " " << nowbt[0][i] << "/" << from[0][i] << " " << nowbt[1][i] << "/" << from[1][i] << std::endl;
+        sum0 += (long double) nowbt[0][i] / from[0][i];
+        sum1 += (long double) nowbt[1][i] / from[1][i];
+    }
+    std::cout << "SUM " << sum0 << " " << sum1 << std::endl;
+
+    nowbt = {{0, 0, 1, 2, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}, {0, 0, 2, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}};
+
+    long long universes = 1;
+    std::vector<long long> winning_universes(2, 0);
+    for (int turn = 1; turn <= 12; turn++) {
+        for (int player = 0; player < 2; player++) {
+            std::cout << "Player " << player << " turn " << turn << std::endl;
+
+            universes *= 3;
+            long long wins = (long double) universes * ((long double) nowbt[player][turn] / pow(3, turn));
+
+            std::cout << "u " << universes << std::endl;
+            std::cout << "n " << nowbt[player][turn] << std::endl;
+            std::cout << "p " << pow(3, turn) << std::endl;
+            std::cout << "w " << wins << std::endl;
+
+            winning_universes[player] += wins;
+
+            std::cout << "sum " << winning_universes[player] << std::endl;
+
+            universes -= wins;
+
+            std::cout << "u2 " << universes << std::endl;
+        }
+    }
+    std::cout << winning_universes[0] << " " << winning_universes[1] << std::endl;
+
+    return 21;
+}
+
 int main() {
-    std::cout << aoc202() << std::endl;
+    std::cout << aoc212() << std::endl;
 }
 // cd build && make -j16 && cd .. && ./build/main
