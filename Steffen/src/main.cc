@@ -2448,7 +2448,114 @@ long long aoc212() {
     return std::max(winning_universes[0], winning_universes[1]);
 }
 
+int aoc221() {
+    std::ifstream file("input/22.txt");
+    std::string line;
+    std::vector<std::pair<std::vector<std::vector<int>>, bool>> steps;
+    while (std::getline(file, line)) {
+        std::pair<std::vector<std::vector<int>>, bool> step;
+        step.second = line.at(1) == 'n';
+
+        size_t pos = line.find("=");
+        line.erase(0, pos + 1);
+        pos = line.find(".");
+        int x0 = std::stoi(line.substr(0, pos));
+        line.erase(0, pos + 2);
+        pos = line.find("=");
+        int x1 = std::stoi(line.substr(0, pos - 2));
+
+        line.erase(0, pos + 1);
+        pos = line.find(".");
+        int y0 = std::stoi(line.substr(0, pos));
+        line.erase(0, pos + 2);
+        pos = line.find("=");
+        int y1 = std::stoi(line.substr(0, pos - 2));
+
+        line.erase(0, pos + 1);
+        pos = line.find(".");
+        int z0 = std::stoi(line.substr(0, pos));
+        line.erase(0, pos + 2);
+        int z1 = std::stoi(line);
+
+        step.first = {{x0, y0, z0}, {x1, y1, z1}};
+        steps.push_back(step);
+    }
+
+    std::vector<std::vector<std::vector<bool>>> core(101);
+    for (size_t i = 0; i < 101; i++) {
+        core[i] = std::vector<std::vector<bool>>(101);
+        for (size_t j = 0; j < 101; j++) {
+            core[i][j] = std::vector<bool>(101, false);
+        }
+    }
+
+    for (size_t i = 0; i < steps.size(); i++) {
+        for (int x = std::max(-50, steps[i].first[0][0]); x <= std::min(50, steps[i].first[1][0]); x++) {
+            for (int y = std::max(-50, steps[i].first[0][1]); y <= std::min(50, steps[i].first[1][1]); y++) {
+                for (int z = std::max(-50, steps[i].first[0][2]); z <= std::min(50, steps[i].first[1][2]); z++) {
+                    core[x + 50][y + 50][z + 50] = steps[i].second;
+                }
+            }
+        }
+    }
+
+    int cnt = 0;
+    for (size_t i = 0; i < 101; i++) {
+        for (size_t j = 0; j < 101; j++) {
+            for (size_t k = 0; k < 101; k++) {
+                if (core[i][j][k]) {
+                    cnt++;
+                }
+            }
+        }
+    }
+    return cnt;
+}
+
+long long aoc222() {
+    std::ifstream file("input/test.txt");
+    std::string line;
+    std::vector<std::pair<std::vector<std::vector<int>>, bool>> steps;
+    while (std::getline(file, line)) {
+        std::pair<std::vector<std::vector<int>>, bool> step;
+        step.second = line.at(1) == 'n';
+
+        size_t pos = line.find("=");
+        line.erase(0, pos + 1);
+        pos = line.find(".");
+        int x0 = std::stoi(line.substr(0, pos));
+        line.erase(0, pos + 2);
+        pos = line.find("=");
+        int x1 = std::stoi(line.substr(0, pos - 2));
+
+        line.erase(0, pos + 1);
+        pos = line.find(".");
+        int y0 = std::stoi(line.substr(0, pos));
+        line.erase(0, pos + 2);
+        pos = line.find("=");
+        int y1 = std::stoi(line.substr(0, pos - 2));
+
+        line.erase(0, pos + 1);
+        pos = line.find(".");
+        int z0 = std::stoi(line.substr(0, pos));
+        line.erase(0, pos + 2);
+        int z1 = std::stoi(line);
+
+        step.first = {{x0, y0, z0}, {x1, y1, z1}};
+        steps.push_back(step);
+    }
+
+    for (size_t i = 0; i < steps.size(); i++) {
+        std::cout << steps[i].second
+                  << "   x " << steps[i].first[0][0] << " - " << steps[i].first[1][0]
+                  << "   y " << steps[i].first[0][1] << " - " << steps[i].first[1][1]
+                  << "   z " << steps[i].first[0][2] << " - " << steps[i].first[1][2] << std::endl;
+    }
+
+    return -1;
+}
+
 int main() {
-    std::cout << aoc212() << std::endl;
+    std::cout << aoc222() << std::endl;
 }
 // cd build && make -j16 && cd .. && ./build/main
