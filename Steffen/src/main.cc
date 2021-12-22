@@ -2512,12 +2512,56 @@ int aoc221() {
     return cnt;
 }
 
+class Cuboid {
+public:
+    Cuboid() : x0(1), x1(0), y0(1), y1(0), z0(1), z1(0) {}
+
+    Cuboid(long long x0, long long x1, long long y0, long long y1, long long z0, long long z1) : x0(x0), x1(x1), y0(y0), y1(y1), z0(z0), z1(z1) {}
+
+    friend std::ostream& operator<<(std::ostream& out, const Cuboid& c);
+
+    long long area() {
+        return (x1 - x0 + 1) * (y1 - y0 + 1) * (z1 - z0 + 1);
+    }
+
+    Cuboid intersect(Cuboid c) {
+        if (c.x1 < x0 || c.x0 > x1 || c.y1 < y0 || c.y0 > y1 || c.z1 < z0 || c.z0 > z1) {
+            return Cuboid();
+        }
+        return Cuboid(std::max(x0, c.x0), std::min(x1, c.x1),
+                      std::max(y0, c.y0), std::min(y1, c.y1),
+                      std::max(z0, c.z0), std::min(z1, c.z1));
+    }
+
+    Cuboid bounding_box(Cuboid c) {
+        return Cuboid(std::min(x0, c.x0), std::max(x1, c.x1),
+                      std::min(y0, c.y0), std::max(y1, c.y1),
+                      std::min(z0, c.z0), std::max(z1, c.z1));
+    }
+
+private:
+    long long x0;
+    long long x1;
+    long long y0;
+    long long y1;
+    long long z0;
+    long long z1;
+};
+
+std::ostream& operator<<(std::ostream& out, const Cuboid& c) {
+    out << "x " << c.x0 << " " << c.x1 << " "
+        << "y " << c.y0 << " " << c.y1 << " "
+        << "z " << c.z0 << " " << c.z1;
+    return out;
+}
+
 long long aoc222() {
-    std::ifstream file("input/test.txt");
+    std::ifstream file("input/22.txt");
     std::string line;
-    std::vector<std::pair<std::vector<std::vector<int>>, bool>> steps;
+    std::vector<std::pair<Cuboid, bool>> steps;
+    Cuboid bb;
     while (std::getline(file, line)) {
-        std::pair<std::vector<std::vector<int>>, bool> step;
+        std::pair<Cuboid, bool> step;
         step.second = line.at(1) == 'n';
 
         size_t pos = line.find("=");
@@ -2541,18 +2585,29 @@ long long aoc222() {
         line.erase(0, pos + 2);
         int z1 = std::stoi(line);
 
-        step.first = {{x0, y0, z0}, {x1, y1, z1}};
+        step.first = Cuboid(x0, x1, y0, y1, z0, z1);
+        bb = bb.bounding_box(step.first);
         steps.push_back(step);
     }
 
+    std::vector<std::pair<Cuboid, bool>> C = {{bb, false}};
+    long long cnt = 0;
     for (size_t i = 0; i < steps.size(); i++) {
-        std::cout << steps[i].second
-                  << "   x " << steps[i].first[0][0] << " - " << steps[i].first[1][0]
-                  << "   y " << steps[i].first[0][1] << " - " << steps[i].first[1][1]
-                  << "   z " << steps[i].first[0][2] << " - " << steps[i].first[1][2] << std::endl;
+        size_t n = C.size();
+        for (size_t j = 0; j < n; j++) {
+            Cuboid s = steps[i].first.intersect(C[j].first);
+            if (s.area() > 0) {
+                if (C[j].second) {
+                    C.push_back({s, false});
+                    cnt -= s.area();
+                } else if (steps[i].second || j > 0) {
+                    C.push_back({s, true});
+                    cnt += s.area();
+                }
+            }
+        }
     }
-
-    return -1;
+    return cnt;
 }
 
 int main() {
