@@ -2520,7 +2520,7 @@ public:
 
     friend std::ostream& operator<<(std::ostream& out, const Cuboid& c);
 
-    long long area() {
+    long long volume() {
         return (x1 - x0 + 1) * (y1 - y0 + 1) * (z1 - z0 + 1);
     }
 
@@ -2596,13 +2596,13 @@ long long aoc222() {
         size_t n = C.size();
         for (size_t j = 0; j < n; j++) {
             Cuboid s = steps[i].first.intersect(C[j].first);
-            if (s.area() > 0) {
+            if (s.volume() > 0) {
                 if (C[j].second) {
                     C.push_back({s, false});
-                    cnt -= s.area();
+                    cnt -= s.volume();
                 } else if (steps[i].second || j > 0) {
                     C.push_back({s, true});
-                    cnt += s.area();
+                    cnt += s.volume();
                 }
             }
         }
