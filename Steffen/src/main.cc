@@ -2367,7 +2367,250 @@ int aoc202() {
     return cnt;
 }
 
+int aoc211() {
+    std::vector<int> space = {4 - 1, 1 - 1};
+    std::vector<int> score = {0, 0};
+    int die = 1 - 1;
+    int cnt = 0;
+    int winner = -1;
+    while (winner < 0) {
+        for (int i = 0; i < 2 && winner < 0; i++) {
+            int move = 0;
+            for (int j = 0; j < 3; j++) {
+                move += die + 1;
+                die = (die + 1) % 100;
+                cnt++;
+            }
+            space[i] = (space[i] + move) % 10;
+            score[i] += space[i] + 1;
+            if (score[i] >= 1000) {
+                winner = i;
+            }
+        }
+    }
+    return score[(winner + 1) % 2] * cnt;
+}
+
+std::vector<long long> number_of_wins_by_turns;
+std::vector<long long> number_of_games_by_turns;
+
+void rec(int space, int score, int turn) {
+    number_of_games_by_turns[turn]++;
+
+    if (score >= 21) {
+        number_of_wins_by_turns[turn]++;
+        return;
+    }
+
+    for (int die1 = 1; die1 <= 3; die1++) {
+        for (int die2 = 1; die2 <= 3; die2++) {
+            for (int die3 = 1; die3 <= 3; die3++) {
+                int next_space = (space + die1 + die2 + die3 - 1) % 10 + 1;
+                rec(next_space, score + next_space, turn + 1);
+            }
+        }
+    }
+}
+
+long long pow(long long base, int exponent) {
+    long long power = 1;
+    for (int i = 0; i < exponent; i++) {
+        power *= base;
+    }
+    return power;
+}
+
+long long aoc212() {
+    std::vector<int> space = {4, 1};
+    std::vector<std::vector<long long>> nowbt(2);
+    std::vector<std::vector<long long>> from(2);
+    for (int i = 0; i < 2; i++) {
+        number_of_wins_by_turns = std::vector<long long>(12, 0);
+        number_of_games_by_turns = std::vector<long long>(12, 0);
+        rec(space[i], 0, 0);
+        nowbt[i] = number_of_wins_by_turns;
+        from[i] = number_of_games_by_turns;
+    }
+
+    long long universes = 1;
+    std::vector<long long> winning_universes(2, 0);
+    for (int turn = 1; turn < 12; turn++) {
+        for (int player = 0; player < 2; player++) {
+            universes *= 27;
+            long long wins = 0;
+            if (from[player][turn] > 0) {
+                wins = (long long) ((long double) universes * ((long double) nowbt[player][turn] / from[player][turn]));
+            }
+            winning_universes[player] += wins;
+            universes -= wins;
+        }
+    }
+    return std::max(winning_universes[0], winning_universes[1]);
+}
+
+int aoc221() {
+    std::ifstream file("input/22.txt");
+    std::string line;
+    std::vector<std::pair<std::vector<std::vector<int>>, bool>> steps;
+    while (std::getline(file, line)) {
+        std::pair<std::vector<std::vector<int>>, bool> step;
+        step.second = line.at(1) == 'n';
+
+        size_t pos = line.find("=");
+        line.erase(0, pos + 1);
+        pos = line.find(".");
+        int x0 = std::stoi(line.substr(0, pos));
+        line.erase(0, pos + 2);
+        pos = line.find("=");
+        int x1 = std::stoi(line.substr(0, pos - 2));
+
+        line.erase(0, pos + 1);
+        pos = line.find(".");
+        int y0 = std::stoi(line.substr(0, pos));
+        line.erase(0, pos + 2);
+        pos = line.find("=");
+        int y1 = std::stoi(line.substr(0, pos - 2));
+
+        line.erase(0, pos + 1);
+        pos = line.find(".");
+        int z0 = std::stoi(line.substr(0, pos));
+        line.erase(0, pos + 2);
+        int z1 = std::stoi(line);
+
+        step.first = {{x0, y0, z0}, {x1, y1, z1}};
+        steps.push_back(step);
+    }
+
+    std::vector<std::vector<std::vector<bool>>> core(101);
+    for (size_t i = 0; i < 101; i++) {
+        core[i] = std::vector<std::vector<bool>>(101);
+        for (size_t j = 0; j < 101; j++) {
+            core[i][j] = std::vector<bool>(101, false);
+        }
+    }
+
+    for (size_t i = 0; i < steps.size(); i++) {
+        for (int x = std::max(-50, steps[i].first[0][0]); x <= std::min(50, steps[i].first[1][0]); x++) {
+            for (int y = std::max(-50, steps[i].first[0][1]); y <= std::min(50, steps[i].first[1][1]); y++) {
+                for (int z = std::max(-50, steps[i].first[0][2]); z <= std::min(50, steps[i].first[1][2]); z++) {
+                    core[x + 50][y + 50][z + 50] = steps[i].second;
+                }
+            }
+        }
+    }
+
+    int cnt = 0;
+    for (size_t i = 0; i < 101; i++) {
+        for (size_t j = 0; j < 101; j++) {
+            for (size_t k = 0; k < 101; k++) {
+                if (core[i][j][k]) {
+                    cnt++;
+                }
+            }
+        }
+    }
+    return cnt;
+}
+
+class Cuboid {
+public:
+    Cuboid() : x0(1), x1(0), y0(1), y1(0), z0(1), z1(0) {}
+
+    Cuboid(long long x0, long long x1, long long y0, long long y1, long long z0, long long z1) : x0(x0), x1(x1), y0(y0), y1(y1), z0(z0), z1(z1) {}
+
+    friend std::ostream& operator<<(std::ostream& out, const Cuboid& c);
+
+    long long volume() {
+        return (x1 - x0 + 1) * (y1 - y0 + 1) * (z1 - z0 + 1);
+    }
+
+    Cuboid intersect(Cuboid c) {
+        if (c.x1 < x0 || c.x0 > x1 || c.y1 < y0 || c.y0 > y1 || c.z1 < z0 || c.z0 > z1) {
+            return Cuboid();
+        }
+        return Cuboid(std::max(x0, c.x0), std::min(x1, c.x1),
+                      std::max(y0, c.y0), std::min(y1, c.y1),
+                      std::max(z0, c.z0), std::min(z1, c.z1));
+    }
+
+    Cuboid bounding_box(Cuboid c) {
+        return Cuboid(std::min(x0, c.x0), std::max(x1, c.x1),
+                      std::min(y0, c.y0), std::max(y1, c.y1),
+                      std::min(z0, c.z0), std::max(z1, c.z1));
+    }
+
+private:
+    long long x0;
+    long long x1;
+    long long y0;
+    long long y1;
+    long long z0;
+    long long z1;
+};
+
+std::ostream& operator<<(std::ostream& out, const Cuboid& c) {
+    out << "x " << c.x0 << " " << c.x1 << " "
+        << "y " << c.y0 << " " << c.y1 << " "
+        << "z " << c.z0 << " " << c.z1;
+    return out;
+}
+
+long long aoc222() {
+    std::ifstream file("input/22.txt");
+    std::string line;
+    std::vector<std::pair<Cuboid, bool>> steps;
+    Cuboid bb;
+    while (std::getline(file, line)) {
+        std::pair<Cuboid, bool> step;
+        step.second = line.at(1) == 'n';
+
+        size_t pos = line.find("=");
+        line.erase(0, pos + 1);
+        pos = line.find(".");
+        int x0 = std::stoi(line.substr(0, pos));
+        line.erase(0, pos + 2);
+        pos = line.find("=");
+        int x1 = std::stoi(line.substr(0, pos - 2));
+
+        line.erase(0, pos + 1);
+        pos = line.find(".");
+        int y0 = std::stoi(line.substr(0, pos));
+        line.erase(0, pos + 2);
+        pos = line.find("=");
+        int y1 = std::stoi(line.substr(0, pos - 2));
+
+        line.erase(0, pos + 1);
+        pos = line.find(".");
+        int z0 = std::stoi(line.substr(0, pos));
+        line.erase(0, pos + 2);
+        int z1 = std::stoi(line);
+
+        step.first = Cuboid(x0, x1, y0, y1, z0, z1);
+        bb = bb.bounding_box(step.first);
+        steps.push_back(step);
+    }
+
+    std::vector<std::pair<Cuboid, bool>> C = {{bb, false}};
+    long long cnt = 0;
+    for (size_t i = 0; i < steps.size(); i++) {
+        size_t n = C.size();
+        for (size_t j = 0; j < n; j++) {
+            Cuboid s = steps[i].first.intersect(C[j].first);
+            if (s.volume() > 0) {
+                if (C[j].second) {
+                    C.push_back({s, false});
+                    cnt -= s.volume();
+                } else if (steps[i].second || j > 0) {
+                    C.push_back({s, true});
+                    cnt += s.volume();
+                }
+            }
+        }
+    }
+    return cnt;
+}
+
 int main() {
-    std::cout << aoc202() << std::endl;
+    std::cout << aoc222() << std::endl;
 }
 // cd build && make -j16 && cd .. && ./build/main
