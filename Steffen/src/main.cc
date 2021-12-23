@@ -2608,6 +2608,20 @@ struct Burrow {
     std::vector<std::vector<int>> room; // Nur die Unsortierten
     std::vector<int> hallway;
     std::vector<int> sorted; // Anzahlen der Sortierten
+
+    bool operator<(const Burrow& b) const {
+        if (room != b.room) {
+            return room < b.room;
+        }
+        if (hallway != b.hallway) {
+            return hallway < b.hallway;
+        }
+        return sorted < b.sorted;
+    }
+
+    bool operator==(const Burrow& b) const {
+        return room == b.room && hallway == b.hallway && sorted == b.sorted;
+    }
 };
 
 void print_burrow(Burrow b) {
@@ -2691,75 +2705,58 @@ std::vector<std::pair<Burrow, int>> neighbors(Burrow b) {
     return result;
 }
 
-int solve(Burrow b, int dist) {
-    // std::cout << std::endl;
-    // print_burrow(b);
-    // std::cout << dist << std::endl;
-
-    if (dist > 12298) {
-        return -1;
-    }
-
-    bool solved = true;
-    for (int i = 0; i < 4; i++) {
-        if (b.sorted[i] != 2) {
-            solved = false;
-        }
-    }
-    if (solved) {
-        return dist;
-    }
-
-    std::vector<std::pair<Burrow, int>> N = neighbors(b);
-    int min = -1;
-    for (int i = 0; i < (int) N.size(); i++) {
-        int sol = solve(N[i].first, dist + N[i].second);
-        if (sol != -1 && (min == -1 || sol < min)) {
-            min = sol;
-        }
-    }
-    return min;
-}
-
 int aoc231() {
-    Burrow b;
+    Burrow start;
+    start.room = {{0, 1}, {3, 2}, {1, 0}, {3, 2}};
+    start.hallway = std::vector<int>(11, -1);
+    start.sorted = std::vector<int>(4, 0);
 
-    b.room = {{0, 1}, {3, 2}, {1, 0}, {3, 2}};
-    b.hallway = std::vector<int>(11, -1);
-    b.sorted = std::vector<int>(4, 0);
+    std::queue<Burrow> q;
+    std::map<Burrow, int> dist;
+    std::map<Burrow, Burrow> prev;
+    dist[start] = 0;
+    q.push(start);
 
-    // 2000
+    Burrow end;
+    while (!q.empty()) {
+        Burrow u = q.front();
+        q.pop();
 
-    b.room = {{0, 1}, {3, 2}, {1, 0}, {-1, 2}};
-    b.hallway = {-1, -1, -1, -1, -1, -1, -1, -1, -1, 3, -1};
-    b.sorted = std::vector<int>(4, 0);
+        bool finished = true;
+        for (size_t i = 0; i < 4 && finished; i++) {
+            if (u.sorted[i] != 2) {
+                finished = false;
+            }
+        }
+        if (finished) {
+            end = u;
+        }
 
-    // 70 7 600
+        std::vector<std::pair<Burrow, int>> N = neighbors(u);
+        for (size_t i = 0; i < N.size(); i++) {
+            Burrow v = N[i].first;
+            if (!dist.contains(v) || dist[v] > dist[u] + N[i].second) {
+                dist[v] = dist[u] + N[i].second;
+                prev[v] = u;
+                q.push(v);
+            }
+        }
+    }
 
-    b.room = {{0, 1}, {3, 2}, {-1, -1}, {-1, -1}};
-    b.hallway = {1, 0, -1, -1, -1, -1, -1, -1, -1, 3, -1};
-    b.sorted = {0, 0, 1, 0};
+    Burrow b = end;
+    std::vector<Burrow> solution;
+    while (b != start) {
+        solution.push_back(b);
+        b = prev[b];
+    }
+    solution.push_back(start);
+    std::reverse(solution.begin(), solution.end());
+    for (auto b : solution) {
+        std::cout << dist[b] << std::endl;
+        print_burrow(b);
+    }
 
-    // 3000 6000 500
-
-    b.room = {{0, 1}, {-1, -1}, {-1, -1}, {-1, -1}};
-    b.hallway = {1, 0, -1, -1, -1, -1, -1, -1, -1, -1, -1};
-    b.sorted = {0, 0, 2, 2};
-
-    // 4 60
-
-    b.room = {{-1, -1}, {-1, -1}, {-1, -1}, {-1, -1}};
-    b.hallway = {1, 0, -1, -1, -1, 0, -1, -1, -1, -1, -1};
-    b.sorted = {0, 1, 2, 2};
-
-    // 3 4 50
-
-    // b.room = {{-1, -1}, {-1, -1}, {-1, -1}, {-1, -1}};
-    // b.hallway = std::vector<int>(11, -1);
-    // b.sorted = {2, 2, 2, 2};
-
-    print_burrow(b);
-    return solve(b, 0);
+    return dist[end];
 }
 
 int main() {
