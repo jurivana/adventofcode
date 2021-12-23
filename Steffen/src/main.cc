@@ -2412,14 +2412,6 @@ void rec(int space, int score, int turn) {
     }
 }
 
-long long pow(long long base, int exponent) {
-    long long power = 1;
-    for (int i = 0; i < exponent; i++) {
-        power *= base;
-    }
-    return power;
-}
-
 long long aoc212() {
     std::vector<int> space = {4, 1};
     std::vector<std::vector<long long>> nowbt(2);
@@ -2610,7 +2602,167 @@ long long aoc222() {
     return cnt;
 }
 
+std::vector<int> entrance = {2, 4, 6, 8};
+
+struct Burrow {
+    std::vector<std::vector<int>> room; // Nur die Unsortierten
+    std::vector<int> hallway;
+    std::vector<int> sorted; // Anzahlen der Sortierten
+};
+
+void print_burrow(Burrow b) {
+    std::vector<char> map = {'A', 'B', 'C', 'D', '.'};
+    for (int i = 0; i < 11; i++) {
+        std::cout << map[(b.hallway[i] + 5) % 5] << " ";
+    }
+    std::cout << std::endl;
+    for (int i = 0; i < 2; i++) {
+        std::cout << " ";
+        for (int j = 0; j < 4; j++) {
+            if (b.sorted[j] < 2 - i) {
+                std::cout << "   " << map[(b.room[j][i] + 5) % 5];
+            } else {
+                std::cout << "  *" << map[j];
+            }
+        }
+        std::cout << std::endl;
+    }
+}
+
+int pow(int base, int exponent) {
+    int power = 1;
+    for (int i = 0; i < exponent; i++) {
+        power *= base;
+    }
+    return power;
+}
+
+std::vector<std::pair<Burrow, int>> neighbors(Burrow b) {
+    std::vector<std::pair<Burrow, int>> result;
+
+    // Aus dem Schott
+    for (int i = 0; i < 4; i++) {
+        int bed = -1;
+        for (int j = 0; j < 2 && bed == -1; j++) {
+            if (b.room[i][j] != -1) {
+                bed = j;
+            }
+        }
+        if (bed != -1) {
+            int amphipod = b.room[i][bed];
+            for (int j = 0; j < 11; j++) {
+                if (std::find(entrance.begin(), entrance.end(), j) == entrance.end()) {
+                    bool free = true;
+                    for (int k = std::min(entrance[i], j); k <= std::max(entrance[i], j) && free; k++) {
+                        if (b.hallway[k] != -1) {
+                            free = false;
+                        }
+                    }
+                    if (free) {
+                        Burrow n = b;
+                        n.room[i][bed] = -1;
+                        n.hallway[j] = amphipod;
+                        result.push_back({n, (bed + 1 + std::abs(entrance[i] - j)) * pow(10, amphipod)});
+                    }
+                }
+            }
+        }
+    }
+
+    // Ins Schott
+    for (int i = 0; i < 11; i++) {
+        int amphipod = b.hallway[i];
+        if (amphipod != -1) {
+            bool free = b.room[amphipod][0] == -1 && b.room[amphipod][1] == -1;
+            for (int j = std::min(i, entrance[amphipod]); j <= std::max(i, entrance[amphipod]) && free; j++) {
+                if (j != i && b.hallway[j] != -1) {
+                    free = false;
+                }
+            }
+            if (free) {
+                Burrow n = b;
+                n.hallway[i] = -1;
+                n.sorted[amphipod]++;
+                result.push_back({n, (std::abs(i - entrance[amphipod]) + 3 - n.sorted[amphipod]) * pow(10, amphipod)});
+            }
+        }
+    }
+
+    return result;
+}
+
+int solve(Burrow b, int dist) {
+    // std::cout << std::endl;
+    // print_burrow(b);
+    // std::cout << dist << std::endl;
+
+    if (dist > 12298) {
+        return -1;
+    }
+
+    bool solved = true;
+    for (int i = 0; i < 4; i++) {
+        if (b.sorted[i] != 2) {
+            solved = false;
+        }
+    }
+    if (solved) {
+        return dist;
+    }
+
+    std::vector<std::pair<Burrow, int>> N = neighbors(b);
+    int min = -1;
+    for (int i = 0; i < (int) N.size(); i++) {
+        int sol = solve(N[i].first, dist + N[i].second);
+        if (sol != -1 && (min == -1 || sol < min)) {
+            min = sol;
+        }
+    }
+    return min;
+}
+
+int aoc231() {
+    Burrow b;
+
+    b.room = {{0, 1}, {3, 2}, {1, 0}, {3, 2}};
+    b.hallway = std::vector<int>(11, -1);
+    b.sorted = std::vector<int>(4, 0);
+
+    // 2000
+
+    b.room = {{0, 1}, {3, 2}, {1, 0}, {-1, 2}};
+    b.hallway = {-1, -1, -1, -1, -1, -1, -1, -1, -1, 3, -1};
+    b.sorted = std::vector<int>(4, 0);
+
+    // 70 7 600
+
+    b.room = {{0, 1}, {3, 2}, {-1, -1}, {-1, -1}};
+    b.hallway = {1, 0, -1, -1, -1, -1, -1, -1, -1, 3, -1};
+    b.sorted = {0, 0, 1, 0};
+
+    // 3000 6000 500
+
+    b.room = {{0, 1}, {-1, -1}, {-1, -1}, {-1, -1}};
+    b.hallway = {1, 0, -1, -1, -1, -1, -1, -1, -1, -1, -1};
+    b.sorted = {0, 0, 2, 2};
+
+    // 4 60
+
+    b.room = {{-1, -1}, {-1, -1}, {-1, -1}, {-1, -1}};
+    b.hallway = {1, 0, -1, -1, -1, 0, -1, -1, -1, -1, -1};
+    b.sorted = {0, 1, 2, 2};
+
+    // 3 4 50
+
+    // b.room = {{-1, -1}, {-1, -1}, {-1, -1}, {-1, -1}};
+    // b.hallway = std::vector<int>(11, -1);
+    // b.sorted = {2, 2, 2, 2};
+
+    print_burrow(b);
+    return solve(b, 0);
+}
+
 int main() {
-    std::cout << aoc222() << std::endl;
+    std::cout << aoc231() << std::endl;
 }
 // cd build && make -j16 && cd .. && ./build/main
