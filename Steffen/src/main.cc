@@ -2021,7 +2021,596 @@ int aoc182() {
     return max;
 }
 
+std::vector<int> matmul(std::vector<std::vector<int>> m, std::vector<int> v) {
+    v.push_back(1);
+    std::vector<int> mv(4);
+    for (size_t i = 0; i < 4; i++) {
+        mv[i] = 0;
+        for (size_t j = 0; j < 4; j++) {
+            mv[i] += m[i][j] * v[j];
+        }
+    }
+    mv.erase(mv.begin() + 3);
+    return mv;
+}
+
+std::vector<int> cross(std::vector<int> a, std::vector<int> b) {
+    return {a[1] * b[2] - a[2] * b[1],
+            a[2] * b[0] - a[0] * b[2],
+            a[0] * b[1] - a[1] * b[0]};
+}
+
+std::vector<std::vector<int>> registration(std::vector<std::vector<int>> map, std::vector<std::vector<int>> pc) {
+    std::vector<std::vector<int>> diffs;
+    std::map<std::vector<int>, std::vector<int>> diff_to_idx;
+    for (size_t i = 0; i < map.size(); i++) {
+        for (size_t j = 0; j < i; j++) {
+            std::vector<int> diff(3);
+            for (size_t k = 0; k < 3; k++) {
+                diff[k] = std::abs(map[i][k] - map[j][k]);
+            }
+            std::sort(diff.begin(), diff.end());
+            diffs.push_back(diff);
+            if (!diff_to_idx.contains(diff)) {
+                diff_to_idx[diff] = {(int) i, (int) j};
+            } else {
+                diff_to_idx[diff] = {-1, -1};
+            }
+        }
+    }
+
+    std::vector<std::vector<std::vector<int>>> orientations;
+    for (int dir = 0; dir < 3; dir++) {
+        for (int dirsgn : {-1, 1}) {
+            for (int up = 0; up < 3; up++) {
+                if (up != dir) {
+                    for (int upsgn : {-1, 1}) {
+                        std::vector<int> x = {0, 0, 0};
+                        x[dir] = dirsgn;
+                        std::vector<int> y = {0, 0, 0};
+                        y[up] = upsgn;
+                        std::vector<int> z = cross(x, y);
+                        orientations.push_back({{x[0], y[0], z[0], 0},
+                                                {x[1], y[1], z[1], 0},
+                                                {x[2], y[2], z[2], 0},
+                                                {0, 0, 0, 1}});
+                    }
+                }
+            }
+        }
+    }
+
+    bool found = false;
+    std::vector<std::vector<int>> m;
+    for (size_t i = 0; i < pc.size() && !found; i++) {
+        for (size_t j = 0; j < pc.size() && !found; j++) {
+            if (i != j) {
+                std::vector<int> diff(3);
+                for (size_t k = 0; k < 3; k++) {
+                    diff[k] = std::abs(pc[i][k] - pc[j][k]);
+                }
+                std::sort(diff.begin(), diff.end());
+
+                if (diff_to_idx.contains(diff)) {
+                    std::vector<int> signed_diff(3);
+                    std::vector<int> signed_original_diff(3);
+                    std::vector<int> idx = diff_to_idx[diff];
+                    for (size_t k = 0; k < 3; k++) {
+                        signed_diff[k] = pc[i][k] - pc[j][k];
+                        signed_original_diff[k] = map[idx[0]][k] - map[idx[1]][k];
+                    }
+
+                    for (size_t o = 0; o < orientations.size() && !found; o++) {
+                        m = orientations[o];
+                        if (matmul(m, signed_diff) == signed_original_diff) {
+                            std::vector<int> offset(3);
+                            for (size_t k = 0; k < 3; k++) {
+                                offset[k] = map[idx[0]][k] - matmul(m, pc[i])[k];
+                            }
+                            for (size_t k = 0; k < 3; k++) {
+                                m[k][3] = offset[k];
+                            }
+
+                            int cnt = 0;
+                            for (auto p : pc) {
+                                std::vector<int> transformed = matmul(m, p);
+                                if (std::find(map.begin(), map.end(), transformed) != map.end()) {
+                                    cnt++;
+                                }
+                            }
+                            if (cnt >= 12) {
+                                found = true;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    if (!found) {
+        m = {};
+    }
+    return m;
+}
+
+int aoc191() {
+    std::ifstream file("input/19.txt");
+    std::string line;
+    std::vector<std::vector<std::vector<int>>> scans(0);
+    std::vector<std::vector<int>> scan;
+    while (std::getline(file, line)) {
+        if (line == "") {
+            scans.push_back(scan);
+        } else if (line.at(1) == '-') {
+            scan.clear();
+        } else {
+            std::vector<int> p(3);
+            size_t pos = line.find(",");
+            p[0] = std::stoi(line.substr(0, pos));
+            line.erase(0, pos + 1);
+            pos = line.find(",");
+            p[1] = std::stoi(line.substr(0, pos));
+            line.erase(0, pos + 1);
+            p[2] = std::stoi(line);
+            scan.push_back(p);
+        }
+    }
+    scans.push_back(scan);
+
+    // for (size_t i = 0; i < scanners.size(); i++) {
+    //     std::cout << "---- " << i << " ----" << std::endl;
+    //     for (auto p : scanners[i]) {
+    //         for (auto x : p) {
+    //             std::cout << x << " ";
+    //         }
+    //         std::cout << std::endl;
+    //     }
+    // }
+    // std::cout << std::endl;
+
+    std::vector<std::vector<int>> map = scans[0];
+    std::queue<std::vector<std::vector<int>>> unregistered;
+    for (size_t i = 0; i < scans.size(); i++) {
+        unregistered.push(scans[i]);
+    }
+    while (!unregistered.empty()) {
+        std::vector<std::vector<int>> scan = unregistered.front();
+        unregistered.pop();
+        std::vector<std::vector<int>> m = registration(map, scan);
+        if (m.size() == 4) {
+            for (size_t i = 0; i < scan.size(); i++) {
+                scan[i] = matmul(m, scan[i]);
+                if (std::find(map.begin(), map.end(), scan[i]) == map.end()) {
+                    map.push_back(scan[i]);
+                }
+            }
+        } else {
+            unregistered.push(scan);
+        }
+    }
+    return map.size();
+}
+
+int aoc192() {
+    std::ifstream file("input/19.txt");
+    std::string line;
+    std::vector<std::vector<std::vector<int>>> scans(0);
+    std::vector<std::vector<int>> scan;
+    while (std::getline(file, line)) {
+        if (line == "") {
+            scans.push_back(scan);
+        } else if (line.at(1) == '-') {
+            scan.clear();
+        } else {
+            std::vector<int> p(3);
+            size_t pos = line.find(",");
+            p[0] = std::stoi(line.substr(0, pos));
+            line.erase(0, pos + 1);
+            pos = line.find(",");
+            p[1] = std::stoi(line.substr(0, pos));
+            line.erase(0, pos + 1);
+            p[2] = std::stoi(line);
+            scan.push_back(p);
+        }
+    }
+    scans.push_back(scan);
+
+    std::vector<std::vector<int>> scanner_positions({{0, 0, 0}});
+    std::vector<std::vector<int>> map = scans[0];
+    std::queue<std::vector<std::vector<int>>> unregistered;
+    for (size_t i = 0; i < scans.size(); i++) {
+        unregistered.push(scans[i]);
+    }
+    while (!unregistered.empty()) {
+        std::vector<std::vector<int>> scan = unregistered.front();
+        unregistered.pop();
+        std::vector<std::vector<int>> m = registration(map, scan);
+        if (m.size() == 4) {
+            for (size_t i = 0; i < scan.size(); i++) {
+                scan[i] = matmul(m, scan[i]);
+                if (std::find(map.begin(), map.end(), scan[i]) == map.end()) {
+                    map.push_back(scan[i]);
+                }
+            }
+            scanner_positions.push_back(matmul(m, {0, 0, 0}));
+        } else {
+            unregistered.push(scan);
+        }
+    }
+    int max = 0;
+    for (size_t i = 0; i < scanner_positions.size(); i++) {
+        for (size_t j = 0; j < i; j++) {
+            int dist = 0;
+            for (size_t k = 0; k < 3; k++) {
+                dist += std::abs(scanner_positions[i][k] - scanner_positions[j][k]);
+            }
+            if (dist > max) {
+                max = dist;
+            }
+        }
+    }
+    return max;
+}
+
+void print_image(std::pair<std::vector<std::vector<bool>>, bool> image) {
+    for (size_t j = 0; j < image.first[0].size() + 2; j++) {
+        std::cout << (image.second ? "\u2588" : ".");
+    }
+    std::cout << std::endl;
+
+    for (size_t i = 0; i < image.first.size(); i++) {
+        std::cout << (image.second ? "\u2588" : ".");
+        for (size_t j = 0; j < image.first[0].size(); j++) {
+            std::cout << (image.first[i][j] ? "\u2588" : ".");
+        }
+        std::cout << (image.second ? "\u2588" : ".") << std::endl;
+    }
+    for (size_t j = 0; j < image.first[0].size() + 2; j++) {
+        std::cout << (image.second ? "\u2588" : ".");
+    }
+    std::cout << std::endl;
+}
+
+std::pair<std::vector<std::vector<bool>>, bool> enhance(std::pair<std::vector<std::vector<bool>>, bool> image, std::vector<bool> algorithm) {
+    std::vector<std::vector<bool>> enhanced(image.first.size() + 2);
+    for (int i = 0; i < (int) enhanced.size(); i++) {
+        enhanced[i] = std::vector<bool>(image.first[0].size() + 2);
+        for (int j = 0; j < (int) enhanced[0].size(); j++) {
+            std::vector<bool> kernel;
+            for (int di = i - 2; di <= i; di++) {
+                for (int dj = j - 2; dj <= j; dj++) {
+                    if (di >= 0 && di < image.first.size() && dj >= 0 && dj < image.first[0].size()) {
+                        kernel.push_back(image.first[di][dj]);
+                    } else {
+                        kernel.push_back(image.second);
+                    }
+                }
+            }
+            enhanced[i][j] = algorithm[decode(kernel)];
+        }
+    }
+    return {enhanced, image.second ? algorithm[511] : algorithm[0]};
+}
+
+int aoc201() {
+    std::ifstream file("input/20.txt");
+    std::string line;
+    std::getline(file, line);
+    std::vector<bool> algorithm(line.size());
+    for (size_t i = 0; i < line.size(); i++) {
+        algorithm[i] = line.at(i) == '#';
+    }
+    std::getline(file, line);
+    std::pair<std::vector<std::vector<bool>>, bool> image;
+    while (std::getline(file, line)) {
+        std::vector<bool> row(line.size());
+        for (size_t i = 0; i < line.size(); i++) {
+            row[i] = line.at(i) == '#';
+        }
+        image.first.push_back(row);
+    }
+    image.second = false;
+
+    print_image(image);
+    for (size_t i = 0; i < 2; i++) {
+        image = enhance(image, algorithm);
+        std::cout << std::endl;
+        print_image(image);
+    }
+
+    int cnt = 0;
+    for (size_t i = 0; i < image.first.size(); i++) {
+        for (size_t j = 0; j < image.first.size(); j++) {
+            if (image.first[i][j]) {
+                cnt++;
+            }
+        }
+    }
+    return cnt;
+}
+
+int aoc202() {
+    std::ifstream file("input/20.txt");
+    std::string line;
+    std::getline(file, line);
+    std::vector<bool> algorithm(line.size());
+    for (size_t i = 0; i < line.size(); i++) {
+        algorithm[i] = line.at(i) == '#';
+    }
+    std::getline(file, line);
+    std::pair<std::vector<std::vector<bool>>, bool> image;
+    while (std::getline(file, line)) {
+        std::vector<bool> row(line.size());
+        for (size_t i = 0; i < line.size(); i++) {
+            row[i] = line.at(i) == '#';
+        }
+        image.first.push_back(row);
+    }
+    image.second = false;
+
+    print_image(image);
+    for (size_t i = 0; i < 50; i++) {
+        image = enhance(image, algorithm);
+        std::cout << std::endl;
+        print_image(image);
+    }
+
+    int cnt = 0;
+    for (size_t i = 0; i < image.first.size(); i++) {
+        for (size_t j = 0; j < image.first.size(); j++) {
+            if (image.first[i][j]) {
+                cnt++;
+            }
+        }
+    }
+    return cnt;
+}
+
+int aoc211() {
+    std::vector<int> space = {4 - 1, 1 - 1};
+    std::vector<int> score = {0, 0};
+    int die = 1 - 1;
+    int cnt = 0;
+    int winner = -1;
+    while (winner < 0) {
+        for (int i = 0; i < 2 && winner < 0; i++) {
+            int move = 0;
+            for (int j = 0; j < 3; j++) {
+                move += die + 1;
+                die = (die + 1) % 100;
+                cnt++;
+            }
+            space[i] = (space[i] + move) % 10;
+            score[i] += space[i] + 1;
+            if (score[i] >= 1000) {
+                winner = i;
+            }
+        }
+    }
+    return score[(winner + 1) % 2] * cnt;
+}
+
+std::vector<long long> number_of_wins_by_turns;
+std::vector<long long> number_of_games_by_turns;
+
+void rec(int space, int score, int turn) {
+    number_of_games_by_turns[turn]++;
+
+    if (score >= 21) {
+        number_of_wins_by_turns[turn]++;
+        return;
+    }
+
+    for (int die1 = 1; die1 <= 3; die1++) {
+        for (int die2 = 1; die2 <= 3; die2++) {
+            for (int die3 = 1; die3 <= 3; die3++) {
+                int next_space = (space + die1 + die2 + die3 - 1) % 10 + 1;
+                rec(next_space, score + next_space, turn + 1);
+            }
+        }
+    }
+}
+
+long long pow(long long base, int exponent) {
+    long long power = 1;
+    for (int i = 0; i < exponent; i++) {
+        power *= base;
+    }
+    return power;
+}
+
+long long aoc212() {
+    std::vector<int> space = {4, 1};
+    std::vector<std::vector<long long>> nowbt(2);
+    std::vector<std::vector<long long>> from(2);
+    for (int i = 0; i < 2; i++) {
+        number_of_wins_by_turns = std::vector<long long>(12, 0);
+        number_of_games_by_turns = std::vector<long long>(12, 0);
+        rec(space[i], 0, 0);
+        nowbt[i] = number_of_wins_by_turns;
+        from[i] = number_of_games_by_turns;
+    }
+
+    long long universes = 1;
+    std::vector<long long> winning_universes(2, 0);
+    for (int turn = 1; turn < 12; turn++) {
+        for (int player = 0; player < 2; player++) {
+            universes *= 27;
+            long long wins = 0;
+            if (from[player][turn] > 0) {
+                wins = (long long) ((long double) universes * ((long double) nowbt[player][turn] / from[player][turn]));
+            }
+            winning_universes[player] += wins;
+            universes -= wins;
+        }
+    }
+    return std::max(winning_universes[0], winning_universes[1]);
+}
+
+int aoc221() {
+    std::ifstream file("input/22.txt");
+    std::string line;
+    std::vector<std::pair<std::vector<std::vector<int>>, bool>> steps;
+    while (std::getline(file, line)) {
+        std::pair<std::vector<std::vector<int>>, bool> step;
+        step.second = line.at(1) == 'n';
+
+        size_t pos = line.find("=");
+        line.erase(0, pos + 1);
+        pos = line.find(".");
+        int x0 = std::stoi(line.substr(0, pos));
+        line.erase(0, pos + 2);
+        pos = line.find("=");
+        int x1 = std::stoi(line.substr(0, pos - 2));
+
+        line.erase(0, pos + 1);
+        pos = line.find(".");
+        int y0 = std::stoi(line.substr(0, pos));
+        line.erase(0, pos + 2);
+        pos = line.find("=");
+        int y1 = std::stoi(line.substr(0, pos - 2));
+
+        line.erase(0, pos + 1);
+        pos = line.find(".");
+        int z0 = std::stoi(line.substr(0, pos));
+        line.erase(0, pos + 2);
+        int z1 = std::stoi(line);
+
+        step.first = {{x0, y0, z0}, {x1, y1, z1}};
+        steps.push_back(step);
+    }
+
+    std::vector<std::vector<std::vector<bool>>> core(101);
+    for (size_t i = 0; i < 101; i++) {
+        core[i] = std::vector<std::vector<bool>>(101);
+        for (size_t j = 0; j < 101; j++) {
+            core[i][j] = std::vector<bool>(101, false);
+        }
+    }
+
+    for (size_t i = 0; i < steps.size(); i++) {
+        for (int x = std::max(-50, steps[i].first[0][0]); x <= std::min(50, steps[i].first[1][0]); x++) {
+            for (int y = std::max(-50, steps[i].first[0][1]); y <= std::min(50, steps[i].first[1][1]); y++) {
+                for (int z = std::max(-50, steps[i].first[0][2]); z <= std::min(50, steps[i].first[1][2]); z++) {
+                    core[x + 50][y + 50][z + 50] = steps[i].second;
+                }
+            }
+        }
+    }
+
+    int cnt = 0;
+    for (size_t i = 0; i < 101; i++) {
+        for (size_t j = 0; j < 101; j++) {
+            for (size_t k = 0; k < 101; k++) {
+                if (core[i][j][k]) {
+                    cnt++;
+                }
+            }
+        }
+    }
+    return cnt;
+}
+
+class Cuboid {
+public:
+    Cuboid() : x0(1), x1(0), y0(1), y1(0), z0(1), z1(0) {}
+
+    Cuboid(long long x0, long long x1, long long y0, long long y1, long long z0, long long z1) : x0(x0), x1(x1), y0(y0), y1(y1), z0(z0), z1(z1) {}
+
+    friend std::ostream& operator<<(std::ostream& out, const Cuboid& c);
+
+    long long volume() {
+        return (x1 - x0 + 1) * (y1 - y0 + 1) * (z1 - z0 + 1);
+    }
+
+    Cuboid intersect(Cuboid c) {
+        if (c.x1 < x0 || c.x0 > x1 || c.y1 < y0 || c.y0 > y1 || c.z1 < z0 || c.z0 > z1) {
+            return Cuboid();
+        }
+        return Cuboid(std::max(x0, c.x0), std::min(x1, c.x1),
+                      std::max(y0, c.y0), std::min(y1, c.y1),
+                      std::max(z0, c.z0), std::min(z1, c.z1));
+    }
+
+    Cuboid bounding_box(Cuboid c) {
+        return Cuboid(std::min(x0, c.x0), std::max(x1, c.x1),
+                      std::min(y0, c.y0), std::max(y1, c.y1),
+                      std::min(z0, c.z0), std::max(z1, c.z1));
+    }
+
+private:
+    long long x0;
+    long long x1;
+    long long y0;
+    long long y1;
+    long long z0;
+    long long z1;
+};
+
+std::ostream& operator<<(std::ostream& out, const Cuboid& c) {
+    out << "x " << c.x0 << " " << c.x1 << " "
+        << "y " << c.y0 << " " << c.y1 << " "
+        << "z " << c.z0 << " " << c.z1;
+    return out;
+}
+
+long long aoc222() {
+    std::ifstream file("input/22.txt");
+    std::string line;
+    std::vector<std::pair<Cuboid, bool>> steps;
+    Cuboid bb;
+    while (std::getline(file, line)) {
+        std::pair<Cuboid, bool> step;
+        step.second = line.at(1) == 'n';
+
+        size_t pos = line.find("=");
+        line.erase(0, pos + 1);
+        pos = line.find(".");
+        int x0 = std::stoi(line.substr(0, pos));
+        line.erase(0, pos + 2);
+        pos = line.find("=");
+        int x1 = std::stoi(line.substr(0, pos - 2));
+
+        line.erase(0, pos + 1);
+        pos = line.find(".");
+        int y0 = std::stoi(line.substr(0, pos));
+        line.erase(0, pos + 2);
+        pos = line.find("=");
+        int y1 = std::stoi(line.substr(0, pos - 2));
+
+        line.erase(0, pos + 1);
+        pos = line.find(".");
+        int z0 = std::stoi(line.substr(0, pos));
+        line.erase(0, pos + 2);
+        int z1 = std::stoi(line);
+
+        step.first = Cuboid(x0, x1, y0, y1, z0, z1);
+        bb = bb.bounding_box(step.first);
+        steps.push_back(step);
+    }
+
+    std::vector<std::pair<Cuboid, bool>> C = {{bb, false}};
+    long long cnt = 0;
+    for (size_t i = 0; i < steps.size(); i++) {
+        size_t n = C.size();
+        for (size_t j = 0; j < n; j++) {
+            Cuboid s = steps[i].first.intersect(C[j].first);
+            if (s.volume() > 0) {
+                if (C[j].second) {
+                    C.push_back({s, false});
+                    cnt -= s.volume();
+                } else if (steps[i].second || j > 0) {
+                    C.push_back({s, true});
+                    cnt += s.volume();
+                }
+            }
+        }
+    }
+    return cnt;
+}
+
 int main() {
-    std::cout << aoc182() << std::endl;
+    std::cout << aoc222() << std::endl;
 }
 // cd build && make -j16 && cd .. && ./build/main
