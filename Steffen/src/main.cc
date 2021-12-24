@@ -2826,7 +2826,7 @@ std::vector<long long> exec(std::vector<Instruction> prgm, std::vector<long long
     size_t in_ptr = 0;
     for (size_t i = 0; i < prgm.size(); i++) {
         std::cout << "---- " << i + 1 << " ----" << std::endl;
-        std::cout << "w: " << reg[0] << ", x: " << reg[1] << ", y: " << reg[2] << ", z: " << reg[3] << std::endl;
+        std::cout << "w=" << reg[0] << ", x=" << reg[1] << ", y=" << reg[2] << ", z=" << reg[3] << std::endl;
         std::cout << prgm[i].opcode << " " << prgm[i].a << " " << prgm[i].b << (prgm[i].immediate ? " (imm)" : "") << std::endl;
         std::string opcode = prgm[i].opcode;
         long long idx = prgm[i].a;
@@ -2864,7 +2864,7 @@ std::vector<long long> exec(std::vector<Instruction> prgm, std::vector<long long
             std::cout << "ERROR: Invalid opcode \"" << opcode << "\"" << std::endl;
             return reg;
         }
-        std::cout << "w: " << reg[0] << ", x: " << reg[1] << ", y: " << reg[2] << ", z: " << reg[3] << std::endl;
+        std::cout << "w=" << reg[0] << ", x=" << reg[1] << ", y=" << reg[2] << ", z=" << reg[3] << std::endl;
     }
     return reg;
 }

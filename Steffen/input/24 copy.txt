@@ -1,94 +1,94 @@
-inp w     ; w IN 0
+inp w     ; w IN0, x 0, y 0, z 0
 
 
 
 
-add x 11  ; x 11
-eql x w   ; 
-eql x 0
-mul y 0
-add y 25
-mul y x
-add y 1
-mul z y
-mul y 0
-add y w
-add y 14
-mul y x
-add z y
-inp w
-mul x 0
-add x z
-mod x 26
-div z 1
-add x 13
-eql x w
-eql x 0
-mul y 0
-add y 25
-mul y x
-add y 1
-mul z y
-mul y 0
-add y w
-add y 8
-mul y x
-add z y
-inp w
-mul x 0
-add x z
-mod x 26
-div z 1
-add x 11
-eql x w
-eql x 0
-mul y 0
-add y 25
-mul y x
-add y 1
-mul z y
-mul y 0
-add y w
-add y 4
-mul y x
-add z y
-inp w
-mul x 0
-add x z
-mod x 26
-div z 1
-add x 10
-eql x w
-eql x 0
-mul y 0
-add y 25
-mul y x
-add y 1
-mul z y
-mul y 0
-add y w
-add y 10
-mul y x
-add z y
-inp w
-mul x 0
-add x z
-mod x 26
-div z 26
-add x -3
-eql x w
-eql x 0
-mul y 0
-add y 25
-mul y x
-add y 1
-mul z y
-mul y 0
-add y w
-add y 14
-mul y x
-add z y
-inp w
+
+
+
+
+
+
+
+
+
+add y w   ; y IN0
+add y 14  ; y IN0 + 14
+
+add z y   ; z IN0 + 14
+inp w     ; w IN1, x ?, y IN0 + 14, z IN0 + 14
+
+
+
+
+
+
+eql x 0   ; x 1
+mul y 0   ; y 0
+add y 25  ; y 25
+
+add y 1   ; y 26
+mul z y   ; z (IN0 + 14) * 26
+mul y 0   ; y 0
+add y w   ; y IN1
+add y 8   ; y IN1 + 8
+
+add z y   ; z (IN0 + 14) * 26 + IN1 + 8
+inp w     ; w IN2, x 1, y IN1 + 8, z (IN0 + 14) * 26 + IN1 + 8
+mul x 0   ; x 0
+
+
+
+
+
+eql x 0   ; x 1
+mul y 0   ; y 0
+add y 25  ; y 25
+
+add y 1   ; y 26
+mul z y   ; z ((IN0 + 14) * 26 + IN1 + 8) * 26
+mul y 0   ; y 0
+add y w   ; y IN2
+add y 4   ; y IN2 + 4
+
+add z y   ; z ((IN0 + 14) * 26 + IN1 + 8) * 26 + IN2 + 4
+inp w     ; w IN3, x 1, y IN2 + 4, z ((IN0 + 14) * 26 + IN1 + 8) * 26 + IN2 + 4
+mul x 0   ; x 0
+
+
+
+
+
+eql x 0  ; x 1
+mul y 0  ; y 0
+add y 25 ; y 25
+
+add y 1  ; y 26
+mul z y  ; z (((IN0 + 14) * 26 + IN1 + 8) * 26 + IN2 + 4) * 26
+mul y 0  ; y 0
+add y w  ; y IN3
+add y 10 ; y IN3 + 10
+
+add z y  ; z (((IN0 + 14) * 26 + IN1 + 8) * 26 + IN2 + 4) * 26 + IN3 + 10
+inp w    ; w IN4
+mul x 0  ; x 0
+// add x z  ; x (((IN0 + 14) * 26 + IN1 + 8) * 26 + IN2 + 4) * 26 + IN3 + 10
+// mod x 26 ; x ((((IN0 + 14) * 26 + IN1 + 8) * 26 + IN2 + 4) * 26 + IN3 + 10) % 26
+div z 26 ; z ((((IN0 + 14) * 26 + IN1 + 8) * 26 + IN2 + 4) * 26 + IN3 + 10) / 26
+// add x -3 ; x ((((IN0 + 14) * 26 + IN1 + 8) * 26 + IN2 + 4) * 26 + IN3 + 10) % 26 - 3
+eql x w  ; x 0
+eql x 0  ; x 1
+mul y 0  ; y 0
+add y 25 ; y 25
+// mul y x
+add y 1  ; y 26
+mul z y  ; z ((((IN0 + 14) * 26 + IN1 + 8) * 26 + IN2 + 4) * 26 + IN3 + 10) /f 26 * 26
+mul y 0  ; y 0
+add y w  ; y IN4
+add y 14 ; y IN4 + 14
+// mul y x
+add z y  ; z ((((IN0 + 14) * 26 + IN1 + 8) * 26 + IN2 + 4) * 26 + IN3 + 10) /f 26 * 26 + IN4 + 14
+inp w    ; w IN5
 mul x 0
 add x z
 mod x 26
