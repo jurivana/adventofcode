@@ -2825,11 +2825,9 @@ std::vector<long long> exec(std::vector<Instruction> prgm, std::vector<long long
     std::vector<long long> reg(4, 0);
     size_t in_ptr = 0;
     for (size_t i = 0; i < prgm.size(); i++) {
-        // for (size_t i = 0; i < 4; i++) {
-        //     std::cout << reg[i] << " ";
-        // }
-        // std::cout << std::endl;
-        // std::cout << prgm[i].opcode << " " << prgm[i].a << " " << prgm[i].b << (prgm[i].immediate ? " (imm)" : "") << std::endl;
+        std::cout << "---- " << i + 1 << " ----" << std::endl;
+        std::cout << "w: " << reg[0] << ", x: " << reg[1] << ", y: " << reg[2] << ", z: " << reg[3] << std::endl;
+        std::cout << prgm[i].opcode << " " << prgm[i].a << " " << prgm[i].b << (prgm[i].immediate ? " (imm)" : "") << std::endl;
         std::string opcode = prgm[i].opcode;
         long long idx = prgm[i].a;
         long long a = reg[idx];
@@ -2866,6 +2864,7 @@ std::vector<long long> exec(std::vector<Instruction> prgm, std::vector<long long
             std::cout << "ERROR: Invalid opcode \"" << opcode << "\"" << std::endl;
             return reg;
         }
+        std::cout << "w: " << reg[0] << ", x: " << reg[1] << ", y: " << reg[2] << ", z: " << reg[3] << std::endl;
     }
     return reg;
 }
@@ -2923,31 +2922,40 @@ long long aoc241() {
         prgm.push_back(instruction);
     }
 
-    long long max_model = -1;
-    for (long long model = 99999999999999; model > 11111111111111 && max_model == -1; model--) {
-        std::vector<long long> d = digits(model);
-        bool zero = false;
-        for (size_t i = 0; i < 14 && !zero; i++) {
-            if (d[i] == 0) {
-                zero = true;
-            }
-        }
-        if (!zero) {
-            for (size_t i = 0; i < 14; i++) {
-                std::cout << d[i] << " ";
-            }
-            std::cout << std::endl;
-            std::vector<long long> out = exec(prgm, d);
-            for (size_t i = 0; i < 4; i++) {
-                std::cout << out[i] << " ";
-            }
-            std::cout << std::endl;
-            if (out[3] == 0) {
-                max_model = model;
-            }
-        }
+    //                ..............
+    long long model = 12345678912345;
+    std::vector<long long> out = exec(prgm, digits(model));
+    for (size_t i = 0; i < 4; i++) {
+        std::cout << out[i] << " ";
     }
-    return max_model;
+    std::cout << std::endl;
+    return model;
+
+    // long long max_model = -1;
+    // for (long long model = 99999999999999; model > 11111111111111 && max_model == -1; model--) {
+    //     std::vector<long long> d = digits(model);
+    //     bool zero = false;
+    //     for (size_t i = 0; i < 14 && !zero; i++) {
+    //         if (d[i] == 0) {
+    //             zero = true;
+    //         }
+    //     }
+    //     if (!zero) {
+    //         for (size_t i = 0; i < 14; i++) {
+    //             std::cout << d[i] << " ";
+    //         }
+    //         std::cout << std::endl;
+    //         std::vector<long long> out = exec(prgm, d);
+    //         for (size_t i = 0; i < 4; i++) {
+    //             std::cout << out[i] << " ";
+    //         }
+    //         std::cout << std::endl;
+    //         if (out[3] == 0) {
+    //             max_model = model;
+    //         }
+    //     }
+    // }
+    // return max_model;
 }
 
 int main() {
