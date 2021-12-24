@@ -2814,7 +2814,143 @@ int aoc232() {
     return dist[end];
 }
 
+struct Instruction {
+    std::string opcode;
+    long long a;
+    long long b;
+    bool immediate;
+};
+
+std::vector<long long> exec(std::vector<Instruction> prgm, std::vector<long long> in) {
+    std::vector<long long> reg(4, 0);
+    size_t in_ptr = 0;
+    for (size_t i = 0; i < prgm.size(); i++) {
+        // for (size_t i = 0; i < 4; i++) {
+        //     std::cout << reg[i] << " ";
+        // }
+        // std::cout << std::endl;
+        // std::cout << prgm[i].opcode << " " << prgm[i].a << " " << prgm[i].b << (prgm[i].immediate ? " (imm)" : "") << std::endl;
+        std::string opcode = prgm[i].opcode;
+        long long idx = prgm[i].a;
+        long long a = reg[idx];
+        long long b = prgm[i].b;
+        if (!prgm[i].immediate) {
+            b = reg[b];
+        }
+        if (opcode == "inp") {
+            if (in_ptr >= in.size()) {
+                std::cout << "ERROR: Missing input " << in_ptr << std::endl;
+                return reg;
+            }
+            reg[idx] = in[in_ptr];
+            in_ptr++;
+        } else if (opcode == "add") {
+            reg[idx] = a + b;
+        } else if (opcode == "mul") {
+            reg[idx] = a * b;
+        } else if (opcode == "div") {
+            if (b == 0) {
+                std::cout << "ERROR: Division by zero" << std::endl;
+                return reg;
+            }
+            reg[idx] = a / b;
+        } else if (opcode == "mod") {
+            if (a < 0 || b <= 0) {
+                std::cout << "ERROR: Modulo" << std::endl;
+                return reg;
+            }
+            reg[idx] = a % b;
+        } else if (opcode == "eql") {
+            reg[idx] = a == b ? 1 : 0;
+        } else {
+            std::cout << "ERROR: Invalid opcode \"" << opcode << "\"" << std::endl;
+            return reg;
+        }
+    }
+    return reg;
+}
+
+std::vector<long long> digits(long long number) {
+    std::vector<long long> digits;
+    while (number > 0) {
+        digits.push_back(number % 10);
+        number /= 10;
+    }
+    std::reverse(digits.begin(), digits.end());
+    return digits;
+}
+
+long long aoc241() {
+    std::ifstream file("input/24.txt");
+    std::string line;
+    std::vector<Instruction> prgm;
+    while (std::getline(file, line)) {
+        Instruction instruction;
+        size_t pos = line.find(" ");
+        instruction.opcode = line.substr(0, pos);
+        line.erase(0, pos + 1);
+        std::string a = line;
+        if (instruction.opcode != "inp") {
+            pos = line.find(" ");
+            a = line.substr(0, pos);
+            line.erase(0, pos + 1);
+        }
+        if (a == "w") {
+            instruction.a = 0;
+        } else if (a == "x") {
+            instruction.a = 1;
+        } else if (a == "y") {
+            instruction.a = 2;
+        } else if (a == "z") {
+            instruction.a = 3;
+        } else {
+            std::cout << "ERROR: Invalid register \"" << a << "\"" << std::endl;
+            return -1;
+        }
+        instruction.immediate = false;
+        if (line == "w") {
+            instruction.b = 0;
+        } else if (line == "x") {
+            instruction.b = 1;
+        } else if (line == "y") {
+            instruction.b = 2;
+        } else if (line == "z") {
+            instruction.b = 3;
+        } else {
+            instruction.b = std::stoi(line);
+            instruction.immediate = true;
+        }
+        prgm.push_back(instruction);
+    }
+
+    long long max_model = -1;
+    for (long long model = 99999999999999; model > 11111111111111 && max_model == -1; model--) {
+        std::vector<long long> d = digits(model);
+        bool zero = false;
+        for (size_t i = 0; i < 14 && !zero; i++) {
+            if (d[i] == 0) {
+                zero = true;
+            }
+        }
+        if (!zero) {
+            for (size_t i = 0; i < 14; i++) {
+                std::cout << d[i] << " ";
+            }
+            std::cout << std::endl;
+            std::vector<long long> out = exec(prgm, d);
+            for (size_t i = 0; i < 4; i++) {
+                std::cout << out[i] << " ";
+            }
+            std::cout << std::endl;
+            if (out[3] == 0) {
+                max_model = model;
+            }
+        }
+    }
+    return max_model;
+}
+
 int main() {
-    std::cout << aoc232() << std::endl;
+    std::cout << aoc241() << std::endl;
 }
 // cd build && make -j16 && cd .. && ./build/main
