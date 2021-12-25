@@ -5,7 +5,32 @@ with open(os.path.join(os.path.dirname(__file__), "input"), "r") as f:
     input = f.read().splitlines()
 
 
+stack = []
+model_number = [None for _ in range(14)]
+for i in range(14):
+    check = int(input[i * 18 + 5].split()[2])
+    offset = int(input[i * 18 + 15].split()[2])
+    if check > 0:
+        stack.append((i, offset))
+    else:
+        idx, val = stack.pop()
+        if val + check > 0:
+            model_number[i] = 9
+            model_number[idx] = 9 - val - check
+        else:
+            model_number[idx] = 9
+            model_number[i] = 9 + val + check
+print(''.join([str(d) for d in model_number]))
+
+
+"""Everything below this line is useless."""
+
+
 class ALU:
+    """
+    Useless class.
+    """
+
     def __init__(self):
         self.vars = {'w': 0, 'x': 0, 'y': 0, 'z': 0}
         self.names = {'w', 'x', 'y', 'z'}
@@ -40,27 +65,33 @@ class ALU:
 
 
 def decr_model_num(model_num: str):
+    """
+    Useless function.
+    """
     digits = [int(d) for d in model_num]
     for i in range(len(digits) - 1, 0, -1):
         digits[i] -= 1
         if digits[i] == 0:
             digits[i] = 9
+
         else:
             break
     return ''.join([str(d) for d in digits])
 
 
-model_num = '99999999999999'
-while True:
-    print(model_num)
-    alu = ALU()
-    digits = [int(d) for d in model_num]
-    for line in input:
-        [instr, *args] = line.split()
-        if instr == 'inp':
-            args.append(digits.pop(0))
-        alu.exec(instr, *args)
-    if alu.vars['z'] == 0:
-        print(model_num)
-        break
-    model_num = decr_model_num(model_num)
+"""
+Slightly too slow.
+"""
+# model_num = '99999999999999'
+# while True:
+#     alu = ALU()
+#     digits = [int(d) for d in model_num]
+#     for line in input:
+#         [instr, *args] = line.split()
+#         if instr == 'inp':
+#             args.append(digits.pop(0))
+#         alu.exec(instr, *args)
+#     if alu.vars['z'] == 0:
+#         print(model_num)
+#         break
+#     model_num = decr_model_num(model_num)
