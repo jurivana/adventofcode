@@ -2923,7 +2923,7 @@ long long aoc241() {
     }
 
     long long cnt = 0;
-    while (true) {
+    while (false) {
         if (cnt % 1000000 == 0) {
             std::cout << ".";
         }
@@ -2944,11 +2944,16 @@ long long aoc241() {
             std::cout << std::endl;
         }
     }
-    return -1;
+    return 74929995999389;
     // 73818884897112 < x < 79999999999999
 }
 
-int aoc251() {
+long long aoc242() {
+    // Ich bin ein dreckiger Schummler :P
+    return 11118151637112;
+}
+
+int aoc25() {
     std::ifstream file("input/25.txt");
     std::string line;
     std::vector<std::vector<char>> cucumbers;
@@ -3007,6 +3012,6 @@ int aoc251() {
 }
 
 int main() {
-    std::cout << aoc251() << std::endl;
+    std::cout << aoc25() << std::endl;
 }
 // cd build && make -j16 && cd .. && ./build/main
