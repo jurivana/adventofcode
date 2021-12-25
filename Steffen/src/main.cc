@@ -2948,7 +2948,65 @@ long long aoc241() {
     // 73818884897112 < x < 79999999999999
 }
 
+int aoc251() {
+    std::ifstream file("input/25.txt");
+    std::string line;
+    std::vector<std::vector<char>> cucumbers;
+    while (std::getline(file, line)) {
+        std::vector<char> row(line.size());
+        for (int i = 0; i < line.size(); i++) {
+            row[i] = line.at(i);
+        }
+        cucumbers.push_back(row);
+    }
+
+    // for (int i = 0; i < cucumbers.size(); i++) {
+    //     for (int j = 0; j < cucumbers[i].size(); j++) {
+    //         std::cout << cucumbers[i][j];
+    //     }
+    //     std::cout << std::endl;
+    // }
+
+    int cnt = 0;
+    bool movement;
+    do {
+        cnt++;
+        // std::cout << "---- " << cnt << " ----" << std::endl;
+
+        movement = false;
+        std::vector<std::vector<char>> next_cucumbers = cucumbers;
+        for (int i = 0; i < cucumbers.size(); i++) {
+            for (int j = 0; j < cucumbers[i].size(); j++) {
+                if (cucumbers[i][j] == '>' && cucumbers[i][(j + 1) % cucumbers[i].size()] == '.') {
+                    next_cucumbers[i][j] = '.';
+                    next_cucumbers[i][(j + 1) % cucumbers[i].size()] = '>';
+                    movement = true;
+                }
+            }
+        }
+        cucumbers = next_cucumbers;
+        for (int i = 0; i < cucumbers.size(); i++) {
+            for (int j = 0; j < cucumbers[i].size(); j++) {
+                if (cucumbers[i][j] == 'v' && cucumbers[(i + 1) % cucumbers.size()][j] == '.') {
+                    next_cucumbers[i][j] = '.';
+                    next_cucumbers[(i + 1) % cucumbers.size()][j] = 'v';
+                    movement = true;
+                }
+            }
+        }
+        cucumbers = next_cucumbers;
+
+        // for (int i = 0; i < cucumbers.size(); i++) {
+        //     for (int j = 0; j < cucumbers[i].size(); j++) {
+        //         std::cout << cucumbers[i][j];
+        //     }
+        //     std::cout << std::endl;
+        // }
+    } while (movement);
+    return cnt;
+}
+
 int main() {
-    std::cout << aoc241() << std::endl;
+    std::cout << aoc251() << std::endl;
 }
 // cd build && make -j16 && cd .. && ./build/main
