@@ -2930,8 +2930,9 @@ long long aoc241() {
         cnt++;
 
         std::vector<long long> d(14);
-        d[0] = rand() % 3 + 7;
-        for (size_t i = 1; i < 14; i++) {
+        d[0] = 7;
+        d[1] = rand() % 7 + 3;
+        for (size_t i = 2; i < 14; i++) {
             d[i] = rand() % 9 + 1;
         }
         std::vector<long long> out = exec(prgm, d);
@@ -2944,9 +2945,8 @@ long long aoc241() {
         }
     }
     return -1;
+    // 73818884897112 < x < 79999999999999
 }
-
-// > 73818884897112
 
 int main() {
     std::cout << aoc241() << std::endl;
