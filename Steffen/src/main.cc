@@ -2825,9 +2825,9 @@ std::vector<long long> exec(std::vector<Instruction> prgm, std::vector<long long
     std::vector<long long> reg(4, 0);
     size_t in_ptr = 0;
     for (size_t i = 0; i < prgm.size(); i++) {
-        std::cout << "---- " << i + 1 << " ----" << std::endl;
-        std::cout << "w=" << reg[0] << ", x=" << reg[1] << ", y=" << reg[2] << ", z=" << reg[3] << std::endl;
-        std::cout << prgm[i].opcode << " " << prgm[i].a << " " << prgm[i].b << (prgm[i].immediate ? " (imm)" : "") << std::endl;
+        // std::cout << "---- " << i + 1 << " ----" << std::endl;
+        // std::cout << "w=" << reg[0] << ", x=" << reg[1] << ", y=" << reg[2] << ", z=" << reg[3] << std::endl;
+        // std::cout << prgm[i].opcode << " " << prgm[i].a << " " << prgm[i].b << (prgm[i].immediate ? " (imm)" : "") << std::endl;
         std::string opcode = prgm[i].opcode;
         long long idx = prgm[i].a;
         long long a = reg[idx];
@@ -2864,7 +2864,7 @@ std::vector<long long> exec(std::vector<Instruction> prgm, std::vector<long long
             std::cout << "ERROR: Invalid opcode \"" << opcode << "\"" << std::endl;
             return reg;
         }
-        std::cout << "w=" << reg[0] << ", x=" << reg[1] << ", y=" << reg[2] << ", z=" << reg[3] << std::endl;
+        // std::cout << "w=" << reg[0] << ", x=" << reg[1] << ", y=" << reg[2] << ", z=" << reg[3] << std::endl;
     }
     return reg;
 }
@@ -2922,43 +2922,96 @@ long long aoc241() {
         prgm.push_back(instruction);
     }
 
-    //                ..............
-    long long model = 12345678912345;
-    std::vector<long long> out = exec(prgm, digits(model));
-    for (size_t i = 0; i < 4; i++) {
-        std::cout << out[i] << " ";
-    }
-    std::cout << std::endl;
-    return model;
+    long long cnt = 0;
+    while (false) {
+        if (cnt % 1000000 == 0) {
+            std::cout << ".";
+        }
+        cnt++;
 
-    // long long max_model = -1;
-    // for (long long model = 99999999999999; model > 11111111111111 && max_model == -1; model--) {
-    //     std::vector<long long> d = digits(model);
-    //     bool zero = false;
-    //     for (size_t i = 0; i < 14 && !zero; i++) {
-    //         if (d[i] == 0) {
-    //             zero = true;
-    //         }
+        std::vector<long long> d(14);
+        d[0] = 7;
+        d[1] = rand() % 7 + 3;
+        for (size_t i = 2; i < 14; i++) {
+            d[i] = rand() % 9 + 1;
+        }
+        std::vector<long long> out = exec(prgm, d);
+        if (out[3] == 0) {
+            std::cout << "-> ";
+            for (size_t i = 0; i < 14; i++) {
+                std::cout << d[i];
+            }
+            std::cout << std::endl;
+        }
+    }
+    return 74929995999389;
+    // 73818884897112 < x < 79999999999999
+}
+
+long long aoc242() {
+    // Ich bin ein dreckiger Schummler :P
+    return 11118151637112;
+}
+
+int aoc25() {
+    std::ifstream file("input/25.txt");
+    std::string line;
+    std::vector<std::vector<char>> cucumbers;
+    while (std::getline(file, line)) {
+        std::vector<char> row(line.size());
+        for (int i = 0; i < line.size(); i++) {
+            row[i] = line.at(i);
+        }
+        cucumbers.push_back(row);
+    }
+
+    // for (int i = 0; i < cucumbers.size(); i++) {
+    //     for (int j = 0; j < cucumbers[i].size(); j++) {
+    //         std::cout << cucumbers[i][j];
     //     }
-    //     if (!zero) {
-    //         for (size_t i = 0; i < 14; i++) {
-    //             std::cout << d[i] << " ";
-    //         }
-    //         std::cout << std::endl;
-    //         std::vector<long long> out = exec(prgm, d);
-    //         for (size_t i = 0; i < 4; i++) {
-    //             std::cout << out[i] << " ";
-    //         }
-    //         std::cout << std::endl;
-    //         if (out[3] == 0) {
-    //             max_model = model;
-    //         }
-    //     }
+    //     std::cout << std::endl;
     // }
-    // return max_model;
+
+    int cnt = 0;
+    bool movement;
+    do {
+        cnt++;
+        // std::cout << "---- " << cnt << " ----" << std::endl;
+
+        movement = false;
+        std::vector<std::vector<char>> next_cucumbers = cucumbers;
+        for (int i = 0; i < cucumbers.size(); i++) {
+            for (int j = 0; j < cucumbers[i].size(); j++) {
+                if (cucumbers[i][j] == '>' && cucumbers[i][(j + 1) % cucumbers[i].size()] == '.') {
+                    next_cucumbers[i][j] = '.';
+                    next_cucumbers[i][(j + 1) % cucumbers[i].size()] = '>';
+                    movement = true;
+                }
+            }
+        }
+        cucumbers = next_cucumbers;
+        for (int i = 0; i < cucumbers.size(); i++) {
+            for (int j = 0; j < cucumbers[i].size(); j++) {
+                if (cucumbers[i][j] == 'v' && cucumbers[(i + 1) % cucumbers.size()][j] == '.') {
+                    next_cucumbers[i][j] = '.';
+                    next_cucumbers[(i + 1) % cucumbers.size()][j] = 'v';
+                    movement = true;
+                }
+            }
+        }
+        cucumbers = next_cucumbers;
+
+        // for (int i = 0; i < cucumbers.size(); i++) {
+        //     for (int j = 0; j < cucumbers[i].size(); j++) {
+        //         std::cout << cucumbers[i][j];
+        //     }
+        //     std::cout << std::endl;
+        // }
+    } while (movement);
+    return cnt;
 }
 
 int main() {
-    std::cout << aoc241() << std::endl;
+    std::cout << aoc25() << std::endl;
 }
 // cd build && make -j16 && cd .. && ./build/main
