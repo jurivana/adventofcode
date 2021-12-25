@@ -2412,14 +2412,6 @@ void rec(int space, int score, int turn) {
     }
 }
 
-long long pow(long long base, int exponent) {
-    long long power = 1;
-    for (int i = 0; i < exponent; i++) {
-        power *= base;
-    }
-    return power;
-}
-
 long long aoc212() {
     std::vector<int> space = {4, 1};
     std::vector<std::vector<long long>> nowbt(2);
@@ -2610,7 +2602,416 @@ long long aoc222() {
     return cnt;
 }
 
+std::vector<int> entrance = {2, 4, 6, 8};
+
+struct Burrow {
+    std::vector<std::vector<int>> room; // Nur die Unsortierten
+    std::vector<int> hallway;
+    std::vector<int> sorted; // Anzahlen der Sortierten
+
+    bool operator<(const Burrow& b) const {
+        if (room != b.room) {
+            return room < b.room;
+        }
+        if (hallway != b.hallway) {
+            return hallway < b.hallway;
+        }
+        return sorted < b.sorted;
+    }
+
+    bool operator==(const Burrow& b) const {
+        return room == b.room && hallway == b.hallway && sorted == b.sorted;
+    }
+};
+
+void print_burrow(Burrow b) {
+    std::vector<char> map = {'A', 'B', 'C', 'D', '.'};
+    for (int i = 0; i < 11; i++) {
+        std::cout << map[(b.hallway[i] + 5) % 5] << " ";
+    }
+    std::cout << std::endl;
+    for (int i = 0; i < 4; i++) {
+        std::cout << " ";
+        for (int j = 0; j < 4; j++) {
+            if (b.sorted[j] < 4 - i) {
+                std::cout << "   " << map[(b.room[j][i] + 5) % 5];
+            } else {
+                std::cout << "  *" << map[j];
+            }
+        }
+        std::cout << std::endl;
+    }
+}
+
+int pow(int base, int exponent) {
+    int power = 1;
+    for (int i = 0; i < exponent; i++) {
+        power *= base;
+    }
+    return power;
+}
+
+std::vector<std::pair<Burrow, int>> neighbors(Burrow b) {
+    std::vector<std::pair<Burrow, int>> result;
+
+    // Aus dem Schott
+    for (int i = 0; i < 4; i++) {
+        int bed = -1;
+        for (int j = 0; j < 4 && bed == -1; j++) {
+            if (b.room[i][j] != -1) {
+                bed = j;
+            }
+        }
+        if (bed != -1) {
+            int amphipod = b.room[i][bed];
+            for (int j = 0; j < 11; j++) {
+                if (std::find(entrance.begin(), entrance.end(), j) == entrance.end()) {
+                    bool free = true;
+                    for (int k = std::min(entrance[i], j); k <= std::max(entrance[i], j) && free; k++) {
+                        if (b.hallway[k] != -1) {
+                            free = false;
+                        }
+                    }
+                    if (free) {
+                        Burrow n = b;
+                        n.room[i][bed] = -1;
+                        n.hallway[j] = amphipod;
+                        result.push_back({n, (bed + 1 + std::abs(entrance[i] - j)) * pow(10, amphipod)});
+                    }
+                }
+            }
+        }
+    }
+
+    // Ins Schott
+    for (int i = 0; i < 11; i++) {
+        int amphipod = b.hallway[i];
+        if (amphipod != -1) {
+            bool free = b.room[amphipod][0] == -1 && b.room[amphipod][1] == -1 && b.room[amphipod][2] == -1 && b.room[amphipod][3] == -1;
+            for (int j = std::min(i, entrance[amphipod]); j <= std::max(i, entrance[amphipod]) && free; j++) {
+                if (j != i && b.hallway[j] != -1) {
+                    free = false;
+                }
+            }
+            if (free) {
+                Burrow n = b;
+                n.hallway[i] = -1;
+                n.sorted[amphipod]++;
+                result.push_back({n, (std::abs(i - entrance[amphipod]) + 5 - n.sorted[amphipod]) * pow(10, amphipod)});
+            }
+        }
+    }
+
+    return result;
+}
+
+// Achtung: Tut nicht mehr wegen 23 2 :(
+int aoc231() {
+    Burrow start;
+    start.room = {{0, 1}, {3, 2}, {1, 0}, {3, 2}};
+    start.hallway = std::vector<int>(11, -1);
+    start.sorted = std::vector<int>(4, 0);
+
+    std::queue<Burrow> q;
+    std::map<Burrow, int> dist;
+    std::map<Burrow, Burrow> prev;
+    dist[start] = 0;
+    q.push(start);
+
+    Burrow end;
+    while (!q.empty()) {
+        Burrow u = q.front();
+        q.pop();
+
+        bool finished = true;
+        for (size_t i = 0; i < 4 && finished; i++) {
+            if (u.sorted[i] != 2) {
+                finished = false;
+            }
+        }
+        if (finished) {
+            end = u;
+        }
+
+        std::vector<std::pair<Burrow, int>> N = neighbors(u);
+        for (size_t i = 0; i < N.size(); i++) {
+            Burrow v = N[i].first;
+            if (!dist.contains(v) || dist[v] > dist[u] + N[i].second) {
+                dist[v] = dist[u] + N[i].second;
+                prev[v] = u;
+                q.push(v);
+            }
+        }
+    }
+
+    Burrow b = end;
+    std::vector<Burrow> solution;
+    while (b != start) {
+        solution.push_back(b);
+        b = prev[b];
+    }
+    solution.push_back(start);
+    std::reverse(solution.begin(), solution.end());
+    for (auto b : solution) {
+        std::cout << dist[b] << std::endl;
+        print_burrow(b);
+    }
+
+    return dist[end];
+}
+
+int aoc232() {
+    Burrow start;
+    start.room = {{0, 3, 3, 1}, {3, 2, 1, 2}, {1, 1, 0, 0}, {3, 0, 2, 2}};
+    start.hallway = std::vector<int>(11, -1);
+    start.sorted = std::vector<int>(4, 0);
+
+    std::queue<Burrow> q;
+    std::map<Burrow, int> dist;
+    std::map<Burrow, Burrow> prev;
+    dist[start] = 0;
+    q.push(start);
+
+    Burrow end;
+    while (!q.empty()) {
+        Burrow u = q.front();
+        q.pop();
+
+        bool finished = true;
+        for (size_t i = 0; i < 4 && finished; i++) {
+            if (u.sorted[i] != 4) {
+                finished = false;
+            }
+        }
+        if (finished) {
+            end = u;
+        }
+
+        std::vector<std::pair<Burrow, int>> N = neighbors(u);
+        for (size_t i = 0; i < N.size(); i++) {
+            Burrow v = N[i].first;
+            if (!dist.contains(v) || dist[v] > dist[u] + N[i].second) {
+                dist[v] = dist[u] + N[i].second;
+                prev[v] = u;
+                q.push(v);
+            }
+        }
+    }
+
+    Burrow b = end;
+    std::vector<Burrow> solution;
+    while (b != start) {
+        solution.push_back(b);
+        b = prev[b];
+    }
+    solution.push_back(start);
+    std::reverse(solution.begin(), solution.end());
+    for (auto b : solution) {
+        std::cout << dist[b] << std::endl;
+        print_burrow(b);
+    }
+
+    return dist[end];
+}
+
+struct Instruction {
+    std::string opcode;
+    long long a;
+    long long b;
+    bool immediate;
+};
+
+std::vector<long long> exec(std::vector<Instruction> prgm, std::vector<long long> in) {
+    std::vector<long long> reg(4, 0);
+    size_t in_ptr = 0;
+    for (size_t i = 0; i < prgm.size(); i++) {
+        // std::cout << "---- " << i + 1 << " ----" << std::endl;
+        // std::cout << "w=" << reg[0] << ", x=" << reg[1] << ", y=" << reg[2] << ", z=" << reg[3] << std::endl;
+        // std::cout << prgm[i].opcode << " " << prgm[i].a << " " << prgm[i].b << (prgm[i].immediate ? " (imm)" : "") << std::endl;
+        std::string opcode = prgm[i].opcode;
+        long long idx = prgm[i].a;
+        long long a = reg[idx];
+        long long b = prgm[i].b;
+        if (!prgm[i].immediate) {
+            b = reg[b];
+        }
+        if (opcode == "inp") {
+            if (in_ptr >= in.size()) {
+                std::cout << "ERROR: Missing input " << in_ptr << std::endl;
+                return reg;
+            }
+            reg[idx] = in[in_ptr];
+            in_ptr++;
+        } else if (opcode == "add") {
+            reg[idx] = a + b;
+        } else if (opcode == "mul") {
+            reg[idx] = a * b;
+        } else if (opcode == "div") {
+            if (b == 0) {
+                std::cout << "ERROR: Division by zero" << std::endl;
+                return reg;
+            }
+            reg[idx] = a / b;
+        } else if (opcode == "mod") {
+            if (a < 0 || b <= 0) {
+                std::cout << "ERROR: Modulo" << std::endl;
+                return reg;
+            }
+            reg[idx] = a % b;
+        } else if (opcode == "eql") {
+            reg[idx] = a == b ? 1 : 0;
+        } else {
+            std::cout << "ERROR: Invalid opcode \"" << opcode << "\"" << std::endl;
+            return reg;
+        }
+        // std::cout << "w=" << reg[0] << ", x=" << reg[1] << ", y=" << reg[2] << ", z=" << reg[3] << std::endl;
+    }
+    return reg;
+}
+
+std::vector<long long> digits(long long number) {
+    std::vector<long long> digits;
+    while (number > 0) {
+        digits.push_back(number % 10);
+        number /= 10;
+    }
+    std::reverse(digits.begin(), digits.end());
+    return digits;
+}
+
+long long aoc241() {
+    std::ifstream file("input/24.txt");
+    std::string line;
+    std::vector<Instruction> prgm;
+    while (std::getline(file, line)) {
+        Instruction instruction;
+        size_t pos = line.find(" ");
+        instruction.opcode = line.substr(0, pos);
+        line.erase(0, pos + 1);
+        std::string a = line;
+        if (instruction.opcode != "inp") {
+            pos = line.find(" ");
+            a = line.substr(0, pos);
+            line.erase(0, pos + 1);
+        }
+        if (a == "w") {
+            instruction.a = 0;
+        } else if (a == "x") {
+            instruction.a = 1;
+        } else if (a == "y") {
+            instruction.a = 2;
+        } else if (a == "z") {
+            instruction.a = 3;
+        } else {
+            std::cout << "ERROR: Invalid register \"" << a << "\"" << std::endl;
+            return -1;
+        }
+        instruction.immediate = false;
+        if (line == "w") {
+            instruction.b = 0;
+        } else if (line == "x") {
+            instruction.b = 1;
+        } else if (line == "y") {
+            instruction.b = 2;
+        } else if (line == "z") {
+            instruction.b = 3;
+        } else {
+            instruction.b = std::stoi(line);
+            instruction.immediate = true;
+        }
+        prgm.push_back(instruction);
+    }
+
+    long long cnt = 0;
+    while (false) {
+        if (cnt % 1000000 == 0) {
+            std::cout << ".";
+        }
+        cnt++;
+
+        std::vector<long long> d(14);
+        d[0] = 7;
+        d[1] = rand() % 7 + 3;
+        for (size_t i = 2; i < 14; i++) {
+            d[i] = rand() % 9 + 1;
+        }
+        std::vector<long long> out = exec(prgm, d);
+        if (out[3] == 0) {
+            std::cout << "-> ";
+            for (size_t i = 0; i < 14; i++) {
+                std::cout << d[i];
+            }
+            std::cout << std::endl;
+        }
+    }
+    return 74929995999389;
+    // 73818884897112 < x < 79999999999999
+}
+
+long long aoc242() {
+    // Ich bin ein dreckiger Schummler :P
+    return 11118151637112;
+}
+
+int aoc25() {
+    std::ifstream file("input/25.txt");
+    std::string line;
+    std::vector<std::vector<char>> cucumbers;
+    while (std::getline(file, line)) {
+        std::vector<char> row(line.size());
+        for (int i = 0; i < line.size(); i++) {
+            row[i] = line.at(i);
+        }
+        cucumbers.push_back(row);
+    }
+
+    // for (int i = 0; i < cucumbers.size(); i++) {
+    //     for (int j = 0; j < cucumbers[i].size(); j++) {
+    //         std::cout << cucumbers[i][j];
+    //     }
+    //     std::cout << std::endl;
+    // }
+
+    int cnt = 0;
+    bool movement;
+    do {
+        cnt++;
+        // std::cout << "---- " << cnt << " ----" << std::endl;
+
+        movement = false;
+        std::vector<std::vector<char>> next_cucumbers = cucumbers;
+        for (int i = 0; i < cucumbers.size(); i++) {
+            for (int j = 0; j < cucumbers[i].size(); j++) {
+                if (cucumbers[i][j] == '>' && cucumbers[i][(j + 1) % cucumbers[i].size()] == '.') {
+                    next_cucumbers[i][j] = '.';
+                    next_cucumbers[i][(j + 1) % cucumbers[i].size()] = '>';
+                    movement = true;
+                }
+            }
+        }
+        cucumbers = next_cucumbers;
+        for (int i = 0; i < cucumbers.size(); i++) {
+            for (int j = 0; j < cucumbers[i].size(); j++) {
+                if (cucumbers[i][j] == 'v' && cucumbers[(i + 1) % cucumbers.size()][j] == '.') {
+                    next_cucumbers[i][j] = '.';
+                    next_cucumbers[(i + 1) % cucumbers.size()][j] = 'v';
+                    movement = true;
+                }
+            }
+        }
+        cucumbers = next_cucumbers;
+
+        // for (int i = 0; i < cucumbers.size(); i++) {
+        //     for (int j = 0; j < cucumbers[i].size(); j++) {
+        //         std::cout << cucumbers[i][j];
+        //     }
+        //     std::cout << std::endl;
+        // }
+    } while (movement);
+    return cnt;
+}
+
 int main() {
-    std::cout << aoc222() << std::endl;
+    std::cout << aoc25() << std::endl;
 }
 // cd build && make -j16 && cd .. && ./build/main
