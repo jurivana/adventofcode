@@ -8,20 +8,16 @@ file = Path(os.path.abspath(__file__)).stem
 input = read(file).split('\n\n')
 
 
-def part_1():
-    max_calories = 0
-    for elf in input:
-        max_calories = max(max_calories, sum([int(calories) for calories in elf.splitlines()]))
-
-    return max_calories
+def get_calories() -> list[int]:
+    return [sum([int(calories) for calories in elf.splitlines()]) for elf in input]
 
 
-def part_2():
-    calories = []
-    for elf in input:
-        heapq.heappush(calories, sum([int(calories) for calories in elf.splitlines()]))
-        
-    return sum(heapq.nlargest(3, calories))
+def part_1() -> int:
+    return max(get_calories())
+
+
+def part_2() -> int:
+    return sum(sorted(get_calories())[-3:])
 
 
 print(globals()[f'part_{sys.argv[1]}']())
