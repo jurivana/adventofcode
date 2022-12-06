@@ -4,11 +4,11 @@
 
 int first_n_distinct(std::string input, int n) {
     for (int i = n; i <= input.size(); i++) {
-        std::set<char> uniques;
+        std::set<char> distincts;
         for (int j = 0; j < n; j++) {
-            uniques.insert(input.at(i - n + j));
+            distincts.insert(input.at(i - n + j));
         }
-        if (uniques.size() == n) {
+        if (distincts.size() == n) {
             return i;
         }
     }
