@@ -17,7 +17,7 @@ void aoc05() {
             }
         }
     }
-    for (int i = 10; i < input.size(); i++) {
+    for (int i = height + 2; i < input.size(); i++) {
         input[i].erase(0, 5); // move_
         int pos = input[i].find(" ");
         int n = std::stoi(input[i].substr(0, pos));
