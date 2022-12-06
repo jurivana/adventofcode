@@ -10,7 +10,7 @@ void aoc04() {
         for (int j = 0; j < 2; j++) {
             sections[i][j] = std::vector<int>(2);
         }
-        size_t pos = input[i].find("-");
+        int pos = input[i].find("-");
         sections[i][0][0] = std::stoi(input[i].substr(0, pos));
         input[i].erase(0, pos + 1);
         pos = input[i].find(",");
