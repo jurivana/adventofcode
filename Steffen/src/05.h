@@ -4,12 +4,12 @@
 
 void aoc05() {
     std::vector<std::string> input = read("../input/05.txt");
-    int n_crates = 9;
+    int n_stacks = 9;
     int height = 8;
-    std::vector<std::stack<char>> crates(n_crates);
-    std::vector<std::stack<char>> crates2(n_crates);
+    std::vector<std::stack<char>> crates(n_stacks);
+    std::vector<std::stack<char>> crates2(n_stacks);
     for (int i = height - 1; i >= 0; i--) {
-        for (int j = 0; j < n_crates; j++) {
+        for (int j = 0; j < n_stacks; j++) {
             char crate = input[i].at(4 * j + 1);
             if (crate != ' ') {
                 crates[j].push(crate);
@@ -40,11 +40,11 @@ void aoc05() {
             tmp.pop();
         }
     }
-    for (int i = 0; i < n_crates; i++) {
+    for (int i = 0; i < n_stacks; i++) {
         std::cout << crates[i].top();
     }
     std::cout << std::endl;
-    for (int i = 0; i < n_crates; i++) {
+    for (int i = 0; i < n_stacks; i++) {
         std::cout << crates2[i].top();
     }
     std::cout << std::endl;
