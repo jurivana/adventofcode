@@ -6,6 +6,9 @@
 #include <algorithm>
 #include <fstream>
 #include <iostream>
+#include <map>
+#include <set>
+#include <stack>
 #include <vector>
 
 std::vector<std::string> read(std::string filename) {
