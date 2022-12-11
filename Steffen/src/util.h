@@ -7,9 +7,12 @@
 #include <fstream>
 #include <iostream>
 #include <map>
+#include <queue>
 #include <set>
 #include <stack>
 #include <vector>
+
+using ll = long long;
 
 std::vector<std::string> read(std::string filename) {
     std::ifstream file(filename);
