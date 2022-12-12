@@ -37,7 +37,8 @@ def print_path(path):
         print()
 
 
-def get_shortest_path(paths, visited):
+def get_shortest_path(paths):
+    visited = set()
     while paths:
         paths.sort(key=lambda path: (path[1] + path[2], path[2]))
         pos, cost, _, prev = paths.pop(0)
@@ -66,12 +67,12 @@ def get_shortest_path(paths, visited):
 
 
 def part_1():
-    return get_shortest_path([(start, 0, manhattan_dist(start, end), (start,))], set((start,)))
+    return get_shortest_path([(start, 0, manhattan_dist(start, end), (start,))])
 
 
 def part_2():
-    shortest_paths = [get_shortest_path([(field, 0, manhattan_dist(field, end), (field,))], set((field,))) for field in a_fields]
-    return min([path for path in shortest_paths if path is not None])
+    paths = [(field, 0, manhattan_dist(field, end), (field,)) for field in a_fields]
+    return get_shortest_path(paths)
 
 
 print(globals()[f'part_{sys.argv[1]}']())
