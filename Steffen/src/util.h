@@ -7,9 +7,12 @@
 #include <fstream>
 #include <iostream>
 #include <map>
+#include <queue>
 #include <set>
 #include <stack>
 #include <vector>
+
+using ll = long long;
 
 std::vector<std::string> read(std::string filename) {
     std::ifstream file(filename);
@@ -19,4 +22,26 @@ std::vector<std::string> read(std::string filename) {
         lines.push_back(line);
     }
     return lines;
+}
+
+std::vector<int> add(std::vector<int> a, std::vector<int> b) {
+    if (a.size() != b.size()) {
+        std::cout << "ERROR: Vector addition size mismatch" << std::endl;
+    }
+    std::vector<int> sum(a.size());
+    for (int i = 0; i < a.size(); i++) {
+        sum[i] = a[i] + b[i];
+    }
+    return sum;
+}
+
+std::vector<int> sub(std::vector<int> a, std::vector<int> b) {
+    if (a.size() != b.size()) {
+        std::cout << "ERROR: Vector subtraction size mismatch" << std::endl;
+    }
+    std::vector<int> diff(a.size());
+    for (int i = 0; i < a.size(); i++) {
+        diff[i] = a[i] - b[i];
+    }
+    return diff;
 }
