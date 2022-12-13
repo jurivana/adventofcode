@@ -8,9 +8,7 @@ struct Packet {
 };
 
 std::ostream& operator<<(std::ostream& os, Packet packet) {
-    if (packet.number != -1) {
-        os << packet.number;
-    } else {
+    if (packet.number == -1) {
         os << "[";
         if (packet.list.size() > 0) {
             for (int i = 0; i < packet.list.size() - 1; i++) {
@@ -19,6 +17,8 @@ std::ostream& operator<<(std::ostream& os, Packet packet) {
             os << packet.list[packet.list.size() - 1];
         }
         os << "]";
+    } else {
+        os << packet.number;
     }
     return os;
 }
@@ -27,22 +27,22 @@ Packet read_packet(std::string s) {
     Packet packet;
     if (s.at(0) == '[') {
         packet.number = -1;
-        int depth = 0;
-        int last_comma = 0;
-        for (int i = 1; i < s.size() - 1; i++) {
-            if (s.at(i) == '[') {
-                depth++;
-            } else if (s.at(i) == ']') {
-                depth--;
-            }
-            if (depth == 0) {
-                if (s.at(i) == ',') {
-                    packet.list.push_back(read_packet(s.substr(last_comma + 1, i - (last_comma + 1))));
-                    last_comma = i;
+        if (s.size() > 2) {
+            int depth = 0;
+            int last_comma = 0;
+            for (int i = 1; i < s.size() - 1; i++) {
+                if (s.at(i) == '[') {
+                    depth++;
+                } else if (s.at(i) == ']') {
+                    depth--;
+                }
+                if (depth == 0) {
+                    if (s.at(i) == ',') {
+                        packet.list.push_back(read_packet(s.substr(last_comma + 1, i - (last_comma + 1))));
+                        last_comma = i;
+                    }
                 }
             }
-        }
-        if (s.size() > 2) {
             packet.list.push_back(read_packet(s.substr(last_comma + 1, s.size() - 1 - (last_comma + 1))));
         }
     } else {
@@ -93,10 +93,10 @@ void aoc13() {
     }
     std::cout << sum << std::endl;
 
-    Packet divider1 = read_packet("[[2]]");
-    Packet divider2 = read_packet("[[6]]");
-    packets.push_back(divider1);
+    Packet divider2 = read_packet("[[2]]");
+    Packet divider6 = read_packet("[[6]]");
     packets.push_back(divider2);
+    packets.push_back(divider6);
     std::sort(packets.begin(), packets.end(), [](Packet a, Packet b) {
         return compare(a, b) < 0;
     });
@@ -104,7 +104,7 @@ void aoc13() {
     idx = 0;
     for (int i = 0; i < packets.size(); i++) {
         idx++;
-        if (compare(packets[i], divider1) == 0 || compare(packets[i], divider2) == 0) {
+        if (compare(packets[i], divider2) == 0 || compare(packets[i], divider6) == 0) {
             decoder_key *= idx;
         }
     }
