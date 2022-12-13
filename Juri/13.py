@@ -4,7 +4,6 @@ import os
 from read import read
 from pathlib import Path
 from itertools import zip_longest
-from ast import literal_eval
 
 file = Path(os.path.abspath(__file__)).stem
 input = read(file)
@@ -35,8 +34,8 @@ def part_1():
     inp = input.split('\n\n')
     for i, pair in enumerate(inp):
         inp_left, inp_right = pair.splitlines()
-        packet_left = literal_eval(inp_left)
-        packet_right = literal_eval(inp_right)
+        packet_left = eval(inp_left)
+        packet_right = eval(inp_right)
         roi += i + 1 if compare(packet_left, packet_right) < 0 else 0
     return roi
 
@@ -44,7 +43,7 @@ def part_1():
 def part_2():
     inp = [line for line in input.splitlines() if line]
     inp.extend(['[[2]]', '[[6]]'])
-    packets = sorted([literal_eval(packet_input) for packet_input in inp], key=cmp_to_key(compare))
+    packets = sorted([eval(packet_input) for packet_input in inp], key=cmp_to_key(compare))
     return (packets.index([[2]]) + 1) * (packets.index([[6]]) + 1)
 
 
