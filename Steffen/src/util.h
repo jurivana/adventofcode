@@ -45,3 +45,12 @@ std::vector<int> sub(std::vector<int> a, std::vector<int> b) {
     }
     return diff;
 }
+
+int manhattan(std::vector<int> a, std::vector<int> b) {
+    std::vector<int> diff = sub(b, a);
+    int sum = 0;
+    for (int i = 0; i < diff.size(); i++) {
+        sum += std::abs(diff[i]);
+    }
+    return sum;
+}
