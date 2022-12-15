@@ -96,6 +96,7 @@ void aoc15() {
         beacons.insert(beacon);
     }
     std::cout << n_covered(sensors, beacons, input_y) << std::endl;
+
     int x;
     int y;
     for (int i = 0; i <= 2 * input_y; i++) {
