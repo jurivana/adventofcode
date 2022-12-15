@@ -13,7 +13,7 @@ def manhattan_dist(p1, p2):
 
 
 def part_1():
-    y = 20000
+    y = 2000000
     occ = set()
     for line in input:
         sx, sy, bx, by = map(int, re.findall(r'-?\d+', line))
