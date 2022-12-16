@@ -3,6 +3,7 @@ import os
 from read import read
 from pathlib import Path
 import re
+from tqdm import trange
 
 file = Path(os.path.abspath(__file__)).stem
 input = read(file).splitlines()
@@ -30,7 +31,8 @@ def part_1():
 def part_2():
     max_range = 4000000
     options = [[(0, max_range)] for _ in range(max_range + 1)]
-    for line in input:
+    for i in trange(len(input)):
+        line = input[i]
         sx, sy, bx, by = map(int, re.findall(r'-?\d+', line))
         dist = manhattan_dist((sx, sy), (bx, by))
         for y in range(sy - dist, sy + dist + 1):
