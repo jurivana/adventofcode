@@ -21,7 +21,6 @@ class Valve():
         return hash(self.name)
 
 
-start: Valve
 valves: Dict[str, Valve] = {}
 
 
