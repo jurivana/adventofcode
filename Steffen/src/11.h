@@ -51,7 +51,7 @@ void aoc11() {
         while (!end) {
             int pos = input[i].find(",");
             if (pos == std::string::npos) {
-                pos = input.size();
+                pos = input[i].size();
                 end = true;
             }
             monkey.items.push(std::stol(input[i].substr(0, pos)));
